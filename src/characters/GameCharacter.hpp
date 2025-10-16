@@ -37,15 +37,13 @@ public:
     void applyGravity(float deltaTime);
     bool isOnGround() const { return onGround; }
     const sf::FloatRect getBounds() const;
-    void checkCollisionWithGround(const Ground& ground);
+    void checkCollisionWithGround(const Ground& ground, sf::Vector2f& moveOffset);
 
     // Gestion des stats
     void takeDamage(int dmg);
     bool isAlive() const;
 
     // Getters
-    int getHp() const;
-    int getMana() const;
     float getSpeed() const;
     sf::Vector2f getPosition() const;
     sf::Sprite &getSprite();

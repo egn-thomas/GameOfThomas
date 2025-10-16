@@ -27,118 +27,138 @@ GameCharacter::GameCharacter(const std::string &name, int hp, int mana, float sp
  */
 void GameCharacter::update(float deltaTime, const std::vector<Ground>& grounds)
 {
-    if (!onGround)
-        applyGravity(deltaTime);
-
-    position += velocity * deltaTime;
-    sprite.setPosition(position);
-
     onGround = false;
 
+    applyGravity(deltaTime);
+
+    sf::Vector2f moveOffset = velocity * deltaTime;
+
     for (const auto& ground : grounds)
-        checkCollisionWithGround(ground);
+        checkCollisionWithGround(ground, moveOffset);
+
+    position += moveOffset;
+    sprite.setPosition(position);
 }
 
+/**
+ * @brief Retourne la hitBox de notre personnage sous forme d'un rectangle.
+ * 
+ * @return FloatRect : La hit-box du personnage.
+ */
 const sf::FloatRect GameCharacter::getBounds() const
 {
     return sprite.getGlobalBounds();
 }
 
-void GameCharacter::checkCollisionWithGround(const Ground& ground)
+/**
+ * @brief A pour objectif de verifier si le personnage touche le Ground passé en paramètres pui ajuste la position du personnage.
+ * 
+ * @param ground Le ground que l'on souhaite tester
+ * @param moveOffset Le deplacement que l'on veut appliquer au personnage
+ */
+void GameCharacter::checkCollisionWithGround(const Ground& ground, sf::Vector2f& moveOffset)
 {
-    sf::FloatRect playerBounds = getBounds();
+    sf::FloatRect futureBounds = getBounds();
+    futureBounds.left += moveOffset.x;
+    futureBounds.top  += moveOffset.y;
+
     sf::FloatRect groundBounds = ground.getBounds();
 
-    if (playerBounds.intersects(groundBounds))
+    if (futureBounds.intersects(groundBounds))
     {
-        float playerBottom = playerBounds.top + playerBounds.height;
-        float playerTop = playerBounds.top;
-        float playerLeft = playerBounds.left;
-        float playerRight = playerBounds.left + playerBounds.width;
+        float playerBottom = futureBounds.top + futureBounds.height;
+        float playerTop    = futureBounds.top;
+        float playerLeft   = futureBounds.left;
+        float playerRight  = futureBounds.left + futureBounds.width;
 
-        float groundTop = groundBounds.top;
+        float groundTop    = groundBounds.top;
         float groundBottom = groundBounds.top + groundBounds.height;
-        float groundLeft = groundBounds.left;
-        float groundRight = groundBounds.left + groundBounds.width;
+        float groundLeft   = groundBounds.left;
+        float groundRight  = groundBounds.left + groundBounds.width;
 
-        float overlapLeft = playerRight - groundLeft;
-        float overlapRight = groundRight - playerLeft;
-        float overlapTop = playerBottom - groundTop;
-        float overlapBottom = groundBottom - playerTop;
+        // Calculer les chevauchements
+        float overlapX = std::min(playerRight - groundLeft, groundRight - playerLeft);
+        float overlapY = std::min(playerBottom - groundTop, groundBottom - playerTop);
 
-        bool fromLeft = std::abs(overlapLeft) < std::abs(overlapRight);
-        bool fromTop = std::abs(overlapTop) < std::abs(overlapBottom);
-
-        float minX = fromLeft ? overlapLeft : -overlapRight;
-        float minY = fromTop ? overlapTop : -overlapBottom;
-
-        // Collision horizontale
-        if (std::abs(minX) < std::abs(minY))
-        {
-            sprite.move(-minX, 0.f);
-            velocity.x = 0.f;
-        }
-        // Collision verticale
-        else
-        {
-            sprite.move(0.f, -minY);
-
-            if (minY < 0.f) // touche le dessus du sol
-            {
+        if (overlapY < overlapX) {
+            // Collision verticale
+            if (velocity.y > 0.f) { // descente → sol
+                moveOffset.y -= overlapY;
+                velocity.y = 0.f;
                 onGround = true;
+            } else if (velocity.y < 0.f) { // montée → plafond
+                moveOffset.y += overlapY;
                 velocity.y = 0.f;
             }
-            else
-            {
-                // touche par le bas (plafond), on stoppe le mouvement vertical
-                velocity.y = std::min(velocity.y, 0.f);
+        } else {
+            // Collision horizontale
+            if (velocity.x > 0.f) { // droite
+                moveOffset.x -= overlapX;
+                velocity.x = 0.f;
+            } else if (velocity.x < 0.f) { // gauche
+                moveOffset.x += overlapX;
+                velocity.x = 0.f;
             }
         }
     }
 }
 
+/**
+ * @brief Fonction qui applique la gravité au personnage
+ * 
+ * @param deltatime Le temps écoulé depuis la dernière mise à jour.
+ */
 void GameCharacter::applyGravity(float deltaTime)
 {
-    const float gravity = 2000.f; // pixels/s²
     if (!onGround)
         velocity.y += gravity * deltaTime;
 }
 
-// ----------------------------------
 
+/**
+ * @brief Dessine le personnage
+ * 
+ * @param window La fenetre ou on veut dessiner le personnage
+ */
 void GameCharacter::draw(sf::RenderWindow &window)
 {
     window.draw(sprite);
 }
 
-// Stats
-void GameCharacter::takeDamage(int dmg)
-{
-    hp -= dmg;
-    if (hp < 0)
-        hp = 0;
-}
-
-bool GameCharacter::isAlive() const { return hp > 0; }
-
-// Position
+/**
+ * @brief Place le personnage à la position passée en paramètres
+ * 
+ * @param x coordonnées en x
+ * @param y coordonnées en y
+ */
 void GameCharacter::setPosition(float x, float y)
 {
     position = {x, y};
     sprite.setPosition(position);
 }
 
+/**
+ * @return La position du personnage
+ */
 sf::Vector2f GameCharacter::getPosition() const { return position; }
 
+/**
+ * @brief Déplace le personnage selon unn vecteur
+ * 
+ *  @param offset Le vecteur en paramètre
+ */
 void GameCharacter::move(const sf::Vector2f &offset)
 {
     position += offset;
     sprite.setPosition(position);
 }
 
-// Getters
-int GameCharacter::getHp() const { return hp; }
-int GameCharacter::getMana() const { return mana; }
+/**
+ * @return La vitesse du personnage
+ */
 float GameCharacter::getSpeed() const { return speed; }
 
+/**
+ * @return Retourne la texture du personnage
+ */
 sf::Sprite &GameCharacter::getSprite() { return sprite; }
