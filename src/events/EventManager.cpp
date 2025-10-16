@@ -7,7 +7,9 @@
 #include <iostream>
 
 
-
+/**
+ * @brief L'EventManager s'occupe de créer tous les évenements et et tous les executer à chaque frame.
+ */
 EventManager::EventManager(sf::RenderWindow& win)
     : window(win) {}
 

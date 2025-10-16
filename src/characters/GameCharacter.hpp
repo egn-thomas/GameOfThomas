@@ -17,7 +17,12 @@ private:
     sf::Vector2f position;
     sf::Sprite sprite;
 
-    float gravity = 980.f;
+    float gravity = 1500.f;
+
+    bool contactTop;
+    bool contactBottom;
+    bool contactLeft;
+    bool contactRight;
 
 protected:
     bool onGround = false;
@@ -37,7 +42,9 @@ public:
     void applyGravity(float deltaTime);
     bool isOnGround() const { return onGround; }
     const sf::FloatRect getBounds() const;
-    void checkCollisionWithGround(const Ground& ground, sf::Vector2f& moveOffset);
+    void checkAllCollisions(const std::vector<Ground>& grounds);
+    void checkCollisionWithGround(const Ground& ground);
+
 
     // Gestion des stats
     void takeDamage(int dmg);
@@ -47,4 +54,10 @@ public:
     float getSpeed() const;
     sf::Vector2f getPosition() const;
     sf::Sprite &getSprite();
+    int getHp() const;
+    int getMaxHp() const;
+    int getMana() const;
+    int getMaxMana() const;
+    sf::Vector2f getVelocity() const;
+    std::array<bool, 4> getContacts() const;
 };

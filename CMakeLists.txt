@@ -9,9 +9,11 @@ add_executable(main
     src/main.cpp
     src/characters/GameCharacter.cpp
     src/characters/Player.cpp
+    src/characters/NonPlayer.cpp
     src/events/EventManager.cpp
     src/events/MoveEvent.cpp
     src/environnement/Ground.cpp
+    src/DevMode.cpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
