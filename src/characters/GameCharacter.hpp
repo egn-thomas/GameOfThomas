@@ -36,7 +36,8 @@ public:
     void move(const sf::Vector2f &offset);
     void applyGravity(float deltaTime);
     bool isOnGround() const { return onGround; }
-    void checkCollisionWithGround(const sf::FloatRect &groundBounds);
+    const sf::FloatRect getBounds() const;
+    void checkCollisionWithGround(const Ground& ground);
 
     // Gestion des stats
     void takeDamage(int dmg);
