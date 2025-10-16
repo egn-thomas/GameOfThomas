@@ -6,23 +6,11 @@ Player::Player(const std::string& name, int hp, int mana, float speed, const sf:
 {
 }
 
-void Player::update() {
-    velocity = {0.f, 0.f};
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-        velocity.x = -speed;
+void Player::jump(float jumpStrength) {
+    if (isOnGround()) {
+        velocity.y = -jumpStrength; // vers le haut, négatif dans SFML
+        onGround = false;           // on est maintenant en l'air
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-        velocity.x = speed;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-        velocity.y = -speed;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-        velocity.y = speed;
-    }
-
-    sprite.move(velocity);
 }
 
 void Player::draw(sf::RenderWindow& window) {

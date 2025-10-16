@@ -1,9 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <string>
+#include "../environnement/Ground.hpp"
 
-class GameCharacter {
-protected:
+class GameCharacter
+{
+private:
     std::string name;
     int hp;
     int maxHp;
@@ -13,31 +15,37 @@ protected:
     float speed;
 
     sf::Vector2f position;
-    sf::Vector2f velocity;
     sf::Sprite sprite;
 
+    float gravity = 980.f;
+
+protected:
+    bool onGround = false;
+    sf::Vector2f velocity;
+
 public:
-    GameCharacter(const std::string& name, int hp, int mana, float speed, const sf::Texture& texture);
+    GameCharacter(const std::string &name, int hp, int mana, float speed, const sf::Texture &texture);
     virtual ~GameCharacter() = default;
 
     // Méthodes essentielles
-    virtual void update() = 0;
-
-    virtual void draw(sf::RenderWindow& window);
-
-    // Gestion des stats
-    void takeDamage(int dmg);
-
-    bool isAlive() const;
+    void update(float deltaTime, const std::vector<Ground> &grounds);
+    virtual void draw(sf::RenderWindow &window);
 
     // Position et mouvement
     void setPosition(float x, float y);
-    void move(const sf::Vector2f& offset);
-    
+    void move(const sf::Vector2f &offset);
+    void applyGravity(float deltaTime);
+    bool isOnGround() const { return onGround; }
+    void checkCollisionWithGround(const sf::FloatRect &groundBounds);
+
+    // Gestion des stats
+    void takeDamage(int dmg);
+    bool isAlive() const;
+
     // Getters
     int getHp() const;
     int getMana() const;
     float getSpeed() const;
     sf::Vector2f getPosition() const;
-    sf::Sprite& getSprite();
+    sf::Sprite &getSprite();
 };
