@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "characters/Player.hpp"
+#include "characters/NonPlayer.hpp"
 #include "events/EventManager.hpp"
 #include "environnement/Ground.hpp"
 #include "DevMode.hpp"
@@ -23,6 +24,21 @@ int main()
     Player player("Thomas", 100, 50, 450.f, playerTexture);
     player.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f);
     player.getSprite().setScale(0.1f, 0.1f);
+
+    //---------------------------------
+    // PNJ
+    //---------------------------------
+    sf::Texture pnjTexture;
+    if (!pnjTexture.loadFromFile("../src/assets/images/nonPlayer.png"))
+    {
+        std::cerr << "Failed to load nonPlayer texture!" << std::endl;
+        return -1;
+    }
+    NonPlayer pnj1("Ennemy", 50, 10, 450.f, pnjTexture);
+    pnj1.setPosition(window.getSize().x / 2.5f, window.getSize().y / 2.f);
+    pnj1.getSprite().setScale(0.1f, 0.1f);
+
+
 
     //---------------------------------
     // Ground
@@ -55,9 +71,11 @@ int main()
         eventManager.processEvents(player);
 
         player.update(deltaTime, grounds);
+        pnj1.update(deltaTime, grounds);
 
         window.clear();
         player.draw(window);
+        pnj1.draw(window);
         ground.draw(window);
         plateforme.draw(window);
         plateforme1.draw(window);
