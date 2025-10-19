@@ -13,3 +13,7 @@ void Ground::draw(sf::RenderWindow& window) {
 const sf::FloatRect Ground::getBounds() const {
     return shape.getGlobalBounds();
 }
+
+sf::RectangleShape Ground::getShape() {
+    return shape;
+}

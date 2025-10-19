@@ -4,15 +4,17 @@
 #include <SFML/Graphics.hpp>
 
 class Ground {
-private:
+protected:
     sf::RectangleShape shape;
 
 public:
     Ground(float x, float y, float width, float height);
 
-    void draw(sf::RenderWindow& window);
+    virtual void draw(sf::RenderWindow& window);
 
     const sf::FloatRect getBounds() const;
+
+    sf::RectangleShape getShape();
 };
 
 #endif

@@ -13,6 +13,7 @@ add_executable(main
     src/events/EventManager.cpp
     src/events/MoveEvent.cpp
     src/environnement/Ground.cpp
+    src/environnement/TexturedGround.cpp
     src/DevMode.cpp
     src/factories/GroundFactory.cpp
     src/factories/CharacterFactory.cpp

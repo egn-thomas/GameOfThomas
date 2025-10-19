@@ -3,6 +3,7 @@
 #include <string>
 #include "../environnement/Ground.hpp"
 #include "Direction.hpp"
+#include <memory>
 
 class GameCharacter
 {
@@ -48,7 +49,7 @@ public:
 
     // Méthodes essentielles
 
-    void update(float deltaTime, const std::vector<Ground> &grounds);
+    void update(float deltaTime, const std::vector<std::unique_ptr<Ground>> &grounds);
     virtual void draw(sf::RenderWindow &window);
 
     // Position et mouvement
@@ -58,7 +59,7 @@ public:
     void applyGravity(float deltaTime);
     bool isOnGround() const { return onGround; }
     const sf::FloatRect getBounds() const;
-    void checkAllCollisions(const std::vector<Ground> &grounds);
+    void checkAllCollisions(const std::vector<std::unique_ptr<Ground>> &grounds);
     void checkCollisionWithGround(const Ground &ground);
     void startDash(int direction);
 

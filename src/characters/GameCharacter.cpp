@@ -1,6 +1,7 @@
 #include "GameCharacter.hpp"
 #include <iostream>
 #include <array>
+#include <memory>
 
 /**
  * @brief Constructeur de GameCharacter, constitue la classe mère de tous les personnages du jeu.
@@ -28,7 +29,7 @@ GameCharacter::GameCharacter(const std::string &name, int hp, int mana, float sp
  * @param deltatime Le temps écoulé depuis le dernier update, en secondes.
  * @param grounds Référence à un vecteur de tous les "Ground" du jeu.
  */
-void GameCharacter::update(float deltaTime, const std::vector<Ground> &grounds)
+void GameCharacter::update(float deltaTime, const std::vector<std::unique_ptr<Ground>> &grounds)
 {
     // Réinitialiser les états de contact
     contactTop = contactBottom = contactLeft = contactRight = false;
@@ -100,10 +101,10 @@ const sf::FloatRect GameCharacter::getBounds() const
  *
  * @param grounds vecteur de Ground
  */
-void GameCharacter::checkAllCollisions(const std::vector<Ground> &grounds)
+void GameCharacter::checkAllCollisions(const std::vector<std::unique_ptr<Ground>> &grounds)
 {
     for (const auto &ground : grounds)
-        checkCollisionWithGround(ground);
+        checkCollisionWithGround(*ground);
 }
 
 /**
@@ -353,13 +354,15 @@ std::array<bool, 4> GameCharacter::getContacts() const
 
 /**
  * @brief Retourne le nom du personnage
- * 
+ *
  * @return Un string : le nom du personnage
  */
-std::string GameCharacter::getName() const {
+std::string GameCharacter::getName() const
+{
     return name;
 }
 
-bool GameCharacter::isCanDash() const {
+bool GameCharacter::isCanDash() const
+{
     return canDash;
 }

@@ -38,23 +38,19 @@ int main()
     {
         float deltaTime = clock.restart().asSeconds();
 
-        // Gestion des événements SFML pour la pause
         sf::Event event;
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
                 window.close();
 
-            // --- Mettre en pause quand la fenêtre perd le focus ---
             if (event.type == sf::Event::LostFocus)
                 isPaused = true;
 
-            // --- Reprendre quand la fenêtre reprend le focus ---
             if (event.type == sf::Event::GainedFocus)
                 isPaused = false;
         }
 
-        // Si le jeu est en pause, on saute la mise à jour mais on garde l’affichage
         if (!isPaused)
         {
             eventManager.processEvents(*player, allCharacters);
@@ -66,7 +62,6 @@ int main()
                     character->update(deltaTime, grounds);
             }
 
-            // Supprime les PNJ morts
             allCharacters.erase(
                 std::remove_if(allCharacters.begin(), allCharacters.end(),
                                [](GameCharacter *c)
@@ -74,7 +69,6 @@ int main()
                 allCharacters.end());
         }
 
-        // --- Rendu ---
         window.clear();
 
         for (auto *character : allCharacters)
@@ -82,11 +76,10 @@ int main()
                 character->draw(window);
 
         for (auto &g : grounds)
-            g.draw(window);
+            g->draw(window);
 
         dev.drawInfo(window, *player, allCharacters);
 
-        // Affiche un message de pause
         if (isPaused)
         {
             sf::Font font;
