@@ -12,11 +12,11 @@ DevMode::DevMode(bool active) : active(active)
 
     text.setFont(font);
     text.setCharacterSize(14);
-    text.setFillColor(sf::Color::Yellow);
+    text.setFillColor(sf::Color::Red);
     text.setPosition(10.f, 10.f);
 }
 
-void DevMode::drawInfo(sf::RenderWindow &window, const GameCharacter &player)
+void DevMode::drawInfo(sf::RenderWindow &window, const GameCharacter &player, std::vector<GameCharacter *> allCharacters)
 {
     if (!active)
         return;
@@ -27,16 +27,9 @@ void DevMode::drawInfo(sf::RenderWindow &window, const GameCharacter &player)
     ss << "On Ground: " << (player.isOnGround() ? "YES" : "NO") << "\n";
     ss << "HP: " << player.getHp() << " / " << player.getMaxHp() << "\n";
     ss << "Mana: " << player.getMana() << " / " << player.getMaxMana() << "\n";
-
-    std::array<bool, 4> contacts = player.getContacts();
-    std::vector<std::string> labels = {"Top", "Bottom", "Left", "Right"};
-
-    for (size_t i = 0; i < contacts.size(); ++i)
-    {
-        std::ostringstream oss;
-        oss << "Contact " << labels[i] << " : " << (contacts[i] ? "true" : "false");
-        text.setString(oss.str());
-    }
+    for (auto character : allCharacters) {
+        ss << character->getName() << " : " << character->getHp() << "\n";
+    }    
 
     text.setString(ss.str());
     window.draw(text);

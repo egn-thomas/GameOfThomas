@@ -8,7 +8,7 @@ public:
     explicit DevMode(bool active = true);
 
     // Affiche les infos du joueur
-    void drawInfo(sf::RenderWindow& window, const GameCharacter& player);
+    void drawInfo(sf::RenderWindow& window, const GameCharacter& player, std::vector<GameCharacter *> allCharacters);
 
     // Activer / désactiver le mode dev
     void setActive(bool active);

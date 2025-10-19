@@ -14,6 +14,8 @@ add_executable(main
     src/events/MoveEvent.cpp
     src/environnement/Ground.cpp
     src/DevMode.cpp
+    src/factories/GroundFactory.cpp
+    src/factories/CharacterFactory.cpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE sfml-graphics sfml-window sfml-system sfml-audio sfml-network)

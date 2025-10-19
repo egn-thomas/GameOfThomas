@@ -15,7 +15,7 @@
  */
 GameCharacter::GameCharacter(const std::string &name, int hp, int mana, float speed, const sf::Texture &texture)
     : name(name), hp(hp), maxHp(hp), mana(mana), maxMana(mana),
-      speed(speed), position(0.f, 0.f), velocity(0.f, 0.f), onGround(false)
+      speed(speed), position(0.f, 0.f), velocity(0.f, 0.f), onGround(false), attackCooldown(0.f)
 {
     sprite.setTexture(texture);
     sprite.setPosition(position);
@@ -34,22 +34,44 @@ void GameCharacter::update(float deltaTime, const std::vector<Ground> &grounds)
     contactTop = contactBottom = contactLeft = contactRight = false;
     onGround = false;
 
-    // Appliquer la gravité seulement si on n’est pas au sol
-    if (!contactBottom)
-        applyGravity(deltaTime);
+    //-------------------------------------
+    // DASH : gestion du mouvement
+    //-------------------------------------
+    if (isDashing)
+    {
+        // Déplacer plus vite pendant le dash
+        sf::Vector2f dashOffset(dashDirection * dashSpeed * deltaTime, velocity.y * deltaTime);
+        position += dashOffset;
+        sprite.setPosition(position);
 
-    // Calcul du déplacement prévisionnel
-    sf::Vector2f moveOffset = velocity * deltaTime;
-    position += moveOffset;
-    sprite.setPosition(position);
+        // Décrémenter le timer du dash
+        dashTimer -= deltaTime;
+        if (dashTimer <= 0.f)
+            isDashing = false; // fin du dash
+    }
+    else
+    {
+        // Appliquer la gravité seulement si on n’est pas au sol
+        if (!contactBottom)
+            applyGravity(deltaTime);
 
-    // Vérifier les collisions et mettre à jour les booléens
+        // Calcul du déplacement prévisionnel normal
+        sf::Vector2f moveOffset = velocity * deltaTime;
+        position += moveOffset;
+        sprite.setPosition(position);
+    }
+
+    //-------------------------------------
+    // Collisions
+    //-------------------------------------
     checkAllCollisions(grounds);
 
     // Corriger la position en fonction des collisions détectées
-    if (contactBottom) {
+    if (contactBottom)
+    {
         velocity.y = 0.f;
         onGround = true;
+        canDash = true;
     }
     if (contactTop)
         velocity.y = std::min(velocity.y, 0.f);
@@ -58,6 +80,9 @@ void GameCharacter::update(float deltaTime, const std::vector<Ground> &grounds)
 
     // Repositionner le sprite final
     sprite.setPosition(position);
+
+    if (attackCooldown > 0.f)
+        attackCooldown -= deltaTime;
 }
 
 /**
@@ -72,12 +97,12 @@ const sf::FloatRect GameCharacter::getBounds() const
 
 /**
  * @brief Cette methode appelle checkCollisionWithGround() pour chaque sol
- * 
+ *
  * @param grounds vecteur de Ground
  */
-void GameCharacter::checkAllCollisions(const std::vector<Ground>& grounds)
+void GameCharacter::checkAllCollisions(const std::vector<Ground> &grounds)
 {
-    for (const auto& ground : grounds)
+    for (const auto &ground : grounds)
         checkCollisionWithGround(ground);
 }
 
@@ -87,16 +112,16 @@ void GameCharacter::checkAllCollisions(const std::vector<Ground>& grounds)
  *
  * @param ground Le ground que l'on souhaite tester
  */
-void GameCharacter::checkCollisionWithGround(const Ground& ground)
+void GameCharacter::checkCollisionWithGround(const Ground &ground)
 {
     sf::FloatRect playerBounds = getBounds();
     sf::FloatRect groundBounds = ground.getBounds();
 
     if (playerBounds.intersects(groundBounds))
     {
-        float overlapLeft   = (playerBounds.left + playerBounds.width) - groundBounds.left;
-        float overlapRight  = (groundBounds.left + groundBounds.width) - playerBounds.left;
-        float overlapTop    = (playerBounds.top + playerBounds.height) - groundBounds.top;
+        float overlapLeft = (playerBounds.left + playerBounds.width) - groundBounds.left;
+        float overlapRight = (groundBounds.left + groundBounds.width) - playerBounds.left;
+        float overlapTop = (playerBounds.top + playerBounds.height) - groundBounds.top;
         float overlapBottom = (groundBounds.top + groundBounds.height) - playerBounds.top;
 
         float minOverlapX = std::min(overlapLeft, overlapRight);
@@ -143,6 +168,83 @@ void GameCharacter::applyGravity(float deltaTime)
 {
     if (!onGround)
         velocity.y += gravity * deltaTime;
+}
+
+/**
+ * @brief Déclenche le dash d'un personnage.
+ */
+void GameCharacter::startDash(int direction)
+{
+    if (canDash && !isDashing)
+    {
+        isDashing = true;
+        dashTimer = dashDuration;
+        dashDirection = direction;
+        canDash = false; // sera réactivé à la prochaine collision avec le sol
+    }
+}
+
+void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets)
+{
+    if (attackCooldown > 0.f)
+        return;
+    const float attackRange = 100.f;               // pixels
+    const float attackHeight = getBounds().height; // même hauteur que le personnage
+
+    // Créer une hitbox pour l'attaque
+    sf::FloatRect attackBox;
+
+    if (dir == Direction::Right)
+    {
+        attackBox.left = position.x + getBounds().width; // à droite du personnage
+    }
+    else
+    {
+        attackBox.left = position.x - attackRange; // à gauche
+    }
+
+    attackBox.top = position.y;
+    attackBox.width = attackRange;
+    attackBox.height = attackHeight;
+
+    // Vérifier collision avec tous les cibles
+    for (auto target : targets)
+    {
+        if (target == this)
+            continue; // ne pas se toucher soi-même
+
+        if (attackBox.intersects(target->getBounds()))
+        {
+            target->takeDamage(10);
+            std::cout << target->getHp() << std::endl;
+        }
+    }
+
+    attackCooldown = attackCooldownMax;
+}
+
+/**
+ * @brief Affecte des dégats au personnage
+ *
+ * @param dmg Le nombre de points de dégats de l'attaque
+ */
+void GameCharacter::takeDamage(int dmg)
+{
+    hp -= dmg;
+    if (hp < 0)
+        hp = 0;
+}
+
+bool GameCharacter::isAlive() const
+{
+    if (this->hp == 0)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 /**
@@ -235,9 +337,9 @@ sf::Vector2f GameCharacter::getVelocity() const
 
 /**
  * @brief Retourne l'état des contacts du personnage avec son environnement.
- * 
+ *
  * @return std::array<bool, 4> : { contactTop, contactBottom, contactLeft, contactRight }
- * 
+ *
  * @note L'ordre est important :
  *       --- [0] : Haut
  *       --- [1] : Bas
@@ -246,5 +348,18 @@ sf::Vector2f GameCharacter::getVelocity() const
  */
 std::array<bool, 4> GameCharacter::getContacts() const
 {
-    return { contactTop, contactBottom, contactLeft, contactRight };
+    return {contactTop, contactBottom, contactLeft, contactRight};
+}
+
+/**
+ * @brief Retourne le nom du personnage
+ * 
+ * @return Un string : le nom du personnage
+ */
+std::string GameCharacter::getName() const {
+    return name;
+}
+
+bool GameCharacter::isCanDash() const {
+    return canDash;
 }

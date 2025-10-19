@@ -11,11 +11,11 @@ class GameCharacter;
 class EventManager {
 public:
     explicit EventManager(sf::RenderWindow& win);
-    void processEvents(Player& player);
+    void processEvents(Player &player, std::vector<GameCharacter *> allCharacters);
 
 private:
     sf::RenderWindow& window;
     std::vector<std::unique_ptr<Event>> eventQueue;
     
-    void handleKeyboard(Player& player, float deltaTime);
+    void handleKeyboard(Player& player, float deltaTime,  std::vector<GameCharacter *> allCharacters);
 };

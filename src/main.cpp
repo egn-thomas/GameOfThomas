@@ -1,9 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "characters/Player.hpp"
-#include "characters/NonPlayer.hpp"
+#include "factories/CharacterFactory.hpp"
+#include "factories/GroundFactory.hpp"
 #include "events/EventManager.hpp"
-#include "environnement/Ground.hpp"
 #include "DevMode.hpp"
 
 int main()
@@ -13,78 +12,96 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     //---------------------------------
-    // Player
+    // Création des entités via les factories
     //---------------------------------
-    sf::Texture playerTexture;
-    if (!playerTexture.loadFromFile("../src/assets/images/player.png"))
-    {
-        std::cerr << "Failed to load player texture!" << std::endl;
-        return -1;
-    }
-    Player player("Thomas", 100, 50, 450.f, playerTexture);
-    player.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f);
-    player.getSprite().setScale(0.1f, 0.1f);
+    auto player = CharacterFactory::createPlayer(window.getSize());
+    auto pnj1 = CharacterFactory::createNonPlayer(window.getSize(), {2.5f, 2.f});
+    auto grounds = GroundFactory::createDefaultGrounds(window.getSize());
 
     //---------------------------------
-    // PNJ
+    // Liste globale des personnages
     //---------------------------------
-    sf::Texture pnjTexture;
-    if (!pnjTexture.loadFromFile("../src/assets/images/nonPlayer.png"))
-    {
-        std::cerr << "Failed to load nonPlayer texture!" << std::endl;
-        return -1;
-    }
-    NonPlayer pnj1("Ennemy", 50, 10, 450.f, pnjTexture);
-    pnj1.setPosition(window.getSize().x / 2.5f, window.getSize().y / 2.f);
-    pnj1.getSprite().setScale(0.1f, 0.1f);
-
-
-
-    //---------------------------------
-    // Ground
-    //---------------------------------
-    Ground ground(0.f, window.getSize().y - 50.f, window.getSize().x, 50.f);
-    Ground plateforme(100.f, 900.f, 500.f, 10.f);
-    Ground plateforme1(600.f, 750.f, 500.f, 10.f);
-    Ground plateforme2(100.f, 600.f, 500.f, 10.f);
-    Ground plateforme3(600.f, 450.f, 500.f, 10.f);
-    Ground plateforme4(100.f, 300.f, 500.f, 10.f);
-    Ground plateformeVerticale(1300.f, 900.f, 100.f, 250.f);
-
-    std::vector<Ground> grounds;
-    grounds.emplace_back(ground);
-    grounds.emplace_back(plateforme);
-    grounds.emplace_back(plateforme1);
-    grounds.emplace_back(plateforme2);
-    grounds.emplace_back(plateforme3);
-    grounds.emplace_back(plateformeVerticale);
+    std::vector<GameCharacter *> allCharacters;
+    allCharacters.push_back(player.get());
+    allCharacters.push_back(pnj1.get());
 
     EventManager eventManager(window);
-
     DevMode dev(true);
     sf::Clock clock;
+
+    bool isPaused = false;
+    //---------------------------------
+    // Boucle principale
+    //---------------------------------
 
     while (window.isOpen())
     {
         float deltaTime = clock.restart().asSeconds();
 
-        eventManager.processEvents(player);
+        // Gestion des événements SFML pour la pause
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
 
-        player.update(deltaTime, grounds);
-        pnj1.update(deltaTime, grounds);
+            // --- Mettre en pause quand la fenêtre perd le focus ---
+            if (event.type == sf::Event::LostFocus)
+                isPaused = true;
 
+            // --- Reprendre quand la fenêtre reprend le focus ---
+            if (event.type == sf::Event::GainedFocus)
+                isPaused = false;
+        }
+
+        // Si le jeu est en pause, on saute la mise à jour mais on garde l’affichage
+        if (!isPaused)
+        {
+            eventManager.processEvents(*player, allCharacters);
+
+            // Update
+            for (auto *character : allCharacters)
+            {
+                if (character->isAlive())
+                    character->update(deltaTime, grounds);
+            }
+
+            // Supprime les PNJ morts
+            allCharacters.erase(
+                std::remove_if(allCharacters.begin(), allCharacters.end(),
+                               [](GameCharacter *c)
+                               { return !c->isAlive() && dynamic_cast<NonPlayer *>(c); }),
+                allCharacters.end());
+        }
+
+        // --- Rendu ---
         window.clear();
-        player.draw(window);
-        pnj1.draw(window);
-        ground.draw(window);
-        plateforme.draw(window);
-        plateforme1.draw(window);
-        plateforme2.draw(window);
-        plateforme3.draw(window);
-        plateformeVerticale.draw(window);
 
-        dev.drawInfo(window, player);
-        
+        for (auto *character : allCharacters)
+            if (character->isAlive())
+                character->draw(window);
+
+        for (auto &g : grounds)
+            g.draw(window);
+
+        dev.drawInfo(window, *player, allCharacters);
+
+        // Affiche un message de pause
+        if (isPaused)
+        {
+            sf::Font font;
+            if (font.loadFromFile("../src/assets/fonts/arial.ttf"))
+            {
+                sf::Text pauseText("Jeu en pause", font, 80);
+                pauseText.setFillColor(sf::Color::White);
+                pauseText.setOutlineColor(sf::Color::Black);
+                pauseText.setOutlineThickness(3);
+                pauseText.setPosition(window.getSize().x / 2.f - pauseText.getGlobalBounds().width / 2.f,
+                                      window.getSize().y / 2.f - pauseText.getGlobalBounds().height / 2.f);
+                window.draw(pauseText);
+            }
+        }
+
         window.display();
     }
 
