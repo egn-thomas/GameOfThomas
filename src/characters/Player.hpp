@@ -6,7 +6,7 @@ class Player : public GameCharacter {
 private:
 public:
     // constructeur
-    Player(const std::string& name, int hp, int mana, float speed, const sf::Texture& texture);
+    Player(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture);
 
     void jump(float jumpStrength);
 

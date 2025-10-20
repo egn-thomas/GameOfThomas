@@ -3,6 +3,11 @@
 #include <iostream>
 #include <array>
 
+/**
+ * @brief Construct a new Dev Mode:: Dev Mode object
+ * 
+ * @param active Indique si le mode développeur est actif au lancement.
+ */
 DevMode::DevMode(bool active) : active(active)
 {
     if (!font.loadFromFile("../src/assets/fonts/RobotoMono-Regular.ttf"))
@@ -16,6 +21,13 @@ DevMode::DevMode(bool active) : active(active)
     text.setPosition(10.f, 10.f);
 }
 
+/**
+ * @brief Affiche les informations du joueur et de debug à l'écran.
+ * 
+ * @param window La fenêtre SFML où dessiner les informations.
+ * @param player Le personnage joueur dont on affiche les infos.
+ * @param allCharacters Tous les personnages du jeu pour afficher leurs HP.
+ */
 void DevMode::drawInfo(sf::RenderWindow &window, const GameCharacter &player, std::vector<GameCharacter *> allCharacters)
 {
     if (!active)
@@ -35,9 +47,22 @@ void DevMode::drawInfo(sf::RenderWindow &window, const GameCharacter &player, st
     window.draw(text);
 }
 
+/**
+ * @brief Active ou désactive le mode développeur.
+ */
 void DevMode::setActive(bool a) { active = a; }
+
+/**
+ * @brief Indique si le mode développeur est actif.
+ */
 bool DevMode::isActive() const { return active; }
 
+/**
+ * @brief Formate un vecteur 2D en chaîne de caractères lisible.
+ * 
+ * @param v Le vecteur à formater.
+ * @return std::string La représentation textuelle du vecteur.
+ */
 std::string DevMode::formatVector(const sf::Vector2f &v) const
 {
     std::stringstream ss;

@@ -12,6 +12,12 @@
 EventManager::EventManager(sf::RenderWindow &win)
     : window(win) {}
 
+/**
+ * @brief Traite les événements de la fenêtre et exécute les événements en attente.
+ *
+ * @param player Le joueur principal.
+ * @param allCharacters Tous les personnages du jeu (joueur et PNJ).
+ */
 void EventManager::processEvents(Player &player, std::vector<GameCharacter *> allCharacters)
 {
     sf::Event event;
@@ -32,6 +38,13 @@ void EventManager::processEvents(Player &player, std::vector<GameCharacter *> al
     eventQueue.clear();
 }
 
+/**
+ * @brief Gère les entrées clavier pour le joueur et crée les événements correspondants.
+ *
+ * @param player Le joueur principal.
+ * @param deltaTime Le temps écoulé depuis la dernière frame.
+ * @param allCharacters Tous les personnages du jeu (joueur et PNJ).
+ */
 void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<GameCharacter *> allCharacters)
 {
     sf::Vector2f direction(0.f, 0.f);

@@ -15,7 +15,7 @@ int main()
     // Création des entités via les factories
     //---------------------------------
     auto player = CharacterFactory::createPlayer(window.getSize());
-    auto pnj1 = CharacterFactory::createNonPlayer(window.getSize(), {2.5f, 2.f});
+    auto npcs = CharacterFactory::createNonPlayer(window.getSize(), {2.5f, 2.f});
     auto grounds = GroundFactory::createDefaultGrounds(window.getSize());
 
     //---------------------------------
@@ -23,7 +23,8 @@ int main()
     //---------------------------------
     std::vector<GameCharacter *> allCharacters;
     allCharacters.push_back(player.get());
-    allCharacters.push_back(pnj1.get());
+    for (auto &npc : npcs)
+        allCharacters.push_back(npc.get());
 
     EventManager eventManager(window);
     DevMode dev(true);

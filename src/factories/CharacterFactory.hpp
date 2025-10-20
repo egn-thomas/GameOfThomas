@@ -9,5 +9,5 @@ class CharacterFactory
 {
 public:
     static std::unique_ptr<Player> createPlayer(const sf::Vector2u &windowSize);
-    static std::unique_ptr<NonPlayer> createNonPlayer(const sf::Vector2u &windowSize, const sf::Vector2f &offset);
+    static std::vector<std::unique_ptr<NonPlayer>> createNonPlayer(const sf::Vector2u &windowSize, const sf::Vector2f &offset);
 };

@@ -1,18 +1,34 @@
 #include "Player.hpp"
 
-// constructeur : on appelle le constructeur de GameCharacter
-Player::Player(const std::string& name, int hp, int mana, float speed, const sf::Texture& texture)
+/**
+ * @brief Constructeur de la classe Player.
+ */
+Player::Player(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture)
     : GameCharacter(name, hp, mana, speed, texture)
 {
+    sprite.setScale(3.f, 3.f);
 }
 
-void Player::jump(float jumpStrength) {
-    if (isOnGround()) {
+/**
+ * @brief Permet au joueur de sauter s'il est au sol.
+ *
+ * @param jumpStrength La force du saut.
+ */
+void Player::jump(float jumpStrength)
+{
+    if (isOnGround())
+    {
         velocity.y = -jumpStrength; // vers le haut, négatif dans SFML
         onGround = false;           // on est maintenant en l'air
     }
 }
 
-void Player::draw(sf::RenderWindow& window) {
+/**
+ * @brief Dessine le joueur à l'écran.
+ *
+ * @param window La fenêtre SFML où dessiner le joueur.
+ */
+void Player::draw(sf::RenderWindow &window)
+{
     GameCharacter::draw(window); // appelle la méthode parent
 }

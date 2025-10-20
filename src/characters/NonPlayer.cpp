@@ -1,11 +1,18 @@
 #include "NonPlayer.hpp"
 
-// constructeur : on appelle le constructeur de GameCharacter
-NonPlayer::NonPlayer(const std::string& name, int hp, int mana, float speed, const sf::Texture& texture)
+/**
+ * @brief Appelle le constructeur de la classe de base GameCharacter.
+ */
+NonPlayer::NonPlayer(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture)
     : GameCharacter(name, hp, mana, speed, texture)
 {
+    sprite.setScale(4.f, 4.f);
 }
 
-void NonPlayer::draw(sf::RenderWindow& window) {
-    GameCharacter::draw(window); // appelle la méthode parent
+/**
+ * @brief Dessine le PNJ en appelant la méthode de la classe de base.
+ */
+void NonPlayer::draw(sf::RenderWindow &window)
+{
+    GameCharacter::draw(window);
 }

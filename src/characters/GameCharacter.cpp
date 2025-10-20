@@ -14,13 +14,13 @@
  *
  * @note Par défaut, le personnage est placé à (0, 0)
  */
-GameCharacter::GameCharacter(const std::string &name, int hp, int mana, float speed, const sf::Texture &texture)
+GameCharacter::GameCharacter(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture)
     : name(name), hp(hp), maxHp(hp), mana(mana), maxMana(mana),
-      speed(speed), position(0.f, 0.f), velocity(0.f, 0.f), onGround(false), attackCooldown(0.f)
+      speed(speed), position(0.f, 0.f), velocity(0.f, 0.f),
+      texture(std::move(texture))
 {
-    sprite.setTexture(texture);
+    sprite.setTexture(*this->texture);
     sprite.setPosition(position);
-    contactTop = contactBottom = contactLeft = contactRight = false;
 }
 
 /**
@@ -79,6 +79,18 @@ void GameCharacter::update(float deltaTime, const std::vector<std::unique_ptr<Gr
     if (contactLeft || contactRight)
         velocity.x = 0.f;
 
+    // Animation
+    if (frameCount > 1)
+    {
+        timer += deltaTime;
+        if (timer >= frameTime)
+        {
+            timer = 0.f;
+            currentFrame = (currentFrame + 1) % frameCount;
+            sprite.setTextureRect(sf::IntRect(
+                currentFrame * frameWidth, 0, frameWidth, frameHeight));
+        }
+    }
     // Repositionner le sprite final
     sprite.setPosition(position);
 
@@ -86,14 +98,32 @@ void GameCharacter::update(float deltaTime, const std::vector<std::unique_ptr<Gr
         attackCooldown -= deltaTime;
 }
 
-/**
- * @brief Retourne la hitBox de notre personnage sous forme d'un rectangle.
- *
- * @return FloatRect : La hit-box du personnage.
- */
-const sf::FloatRect GameCharacter::getBounds() const
+sf::FloatRect GameCharacter::getBounds() const
 {
-    return sprite.getGlobalBounds();
+    return sf::FloatRect(
+        position.x + hitbox.left,
+        position.y + hitbox.top,
+        hitbox.width,
+        hitbox.height);
+}
+
+/**
+ * @brief Définit la hitbox du personnage
+ *
+ * @param offsetX Décalage en X par rapport à la position du sprite
+ * @param offsetY Décalage en Y par rapport à la position du sprite
+ * @param width Largeur de la hitbox
+ * @param height Hauteur de la hitbox
+ */
+void GameCharacter::setHitbox(float offsetX, float offsetY, float width, float height)
+{
+    float scaleX = sprite.getScale().x;
+    float scaleY = sprite.getScale().y;
+    offsetX *= scaleX;
+    offsetY *= scaleY;
+    width *= scaleX;
+    height *= scaleY;
+    hitbox = sf::FloatRect(offsetX, offsetY, width, height);
 }
 
 /**
@@ -256,6 +286,23 @@ bool GameCharacter::isAlive() const
 void GameCharacter::draw(sf::RenderWindow &window)
 {
     window.draw(sprite);
+}
+
+/**
+ * @brief Définit les paramètres d'animation du personnage
+ *
+ * @param count Le nombre de frames de l'animation
+ * @param width La largeur d'une frame
+ * @param height La hauteur d'une frame
+ * @param fps Le nombre de frames par seconde
+ */
+void GameCharacter::setAnimationParams(int count, int width, int height, float fps)
+{
+    frameCount = count;
+    frameWidth = width;
+    frameHeight = height;
+    frameTime = 1.f / fps;
+    sprite.setTextureRect(sf::IntRect(0, 0, width, height));
 }
 
 /**

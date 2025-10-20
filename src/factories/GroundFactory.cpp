@@ -3,6 +3,12 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
+/**
+ * @brief Crée une série de plateformes par défaut pour le niveau de jeu.
+ * 
+ * @param windowSize La taille de la fenêtre de jeu pour positionner les plateformes.
+ * @return std::vector<std::unique_ptr<Ground>> Un vecteur de pointeurs
+ */
 std::vector<std::unique_ptr<Ground>> GroundFactory::createDefaultGrounds(const sf::Vector2u &windowSize)
 {
     std::vector<std::unique_ptr<Ground>> grounds;
