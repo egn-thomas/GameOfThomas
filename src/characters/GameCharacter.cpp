@@ -17,7 +17,7 @@
 GameCharacter::GameCharacter(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture)
     : name(name), hp(hp), maxHp(hp), mana(mana), maxMana(mana),
       speed(speed), position(0.f, 0.f), velocity(0.f, 0.f),
-      texture(std::move(texture))
+      texture(std::move(texture)), previousPosition(0.f, 0.f)
 {
     sprite.setTexture(*this->texture);
     sprite.setPosition(position);
@@ -35,51 +35,54 @@ void GameCharacter::update(float deltaTime, const std::vector<std::unique_ptr<Gr
     contactTop = contactBottom = contactLeft = contactRight = false;
     onGround = false;
 
-    //-------------------------------------
-    // DASH : gestion du mouvement
-    //-------------------------------------
-    if (isDashing)
-    {
-        // Déplacer plus vite pendant le dash
-        sf::Vector2f dashOffset(dashDirection * dashSpeed * deltaTime, velocity.y * deltaTime);
-        position += dashOffset;
-        sprite.setPosition(position);
+    // Détection de mouvement horizontal réel
+    float deltaX = position.x - previousPosition.x;
+    const float moveThreshold = 1.0f;
 
-        // Décrémenter le timer du dash
-        dashTimer -= deltaTime;
-        if (dashTimer <= 0.f)
-            isDashing = false; // fin du dash
+    if (std::abs(deltaX) > moveThreshold)
+    {
+        stillTimer = 0.f;
+        setAnimationState(AnimationState::Walk);
+
+        // Déterminer l’orientation
+        facingLeft = (deltaX < 0.f);
     }
     else
     {
-        // Appliquer la gravité seulement si on n’est pas au sol
-        if (!contactBottom)
-            applyGravity(deltaTime);
+        stillTimer += deltaTime;
+        if (stillTimer > 0.1f)
+            setAnimationState(AnimationState::Idle);
+    }
 
-        // Calcul du déplacement prévisionnel normal
-        sf::Vector2f moveOffset = velocity * deltaTime;
-        position += moveOffset;
-        sprite.setPosition(position);
+    //-------------------------------------
+    // DASH / Gravité / Déplacement
+    //-------------------------------------
+    if (isDashing)
+    {
+        sf::Vector2f dashOffset(dashDirection * dashSpeed * deltaTime, velocity.y * deltaTime);
+        position += dashOffset;
+        dashTimer -= deltaTime;
+        if (dashTimer <= 0.f) isDashing = false;
+    }
+    else
+    {
+        if (!contactBottom) applyGravity(deltaTime);
+        position += velocity * deltaTime;
     }
 
     //-------------------------------------
     // Collisions
     //-------------------------------------
     checkAllCollisions(grounds);
+    if (contactBottom) { velocity.y = 0.f; onGround = true; canDash = true; }
+    if (contactTop) velocity.y = std::min(velocity.y, 0.f);
+    if (contactLeft || contactRight) velocity.x = 0.f;
 
-    // Corriger la position en fonction des collisions détectées
-    if (contactBottom)
-    {
-        velocity.y = 0.f;
-        onGround = true;
-        canDash = true;
-    }
-    if (contactTop)
-        velocity.y = std::min(velocity.y, 0.f);
-    if (contactLeft || contactRight)
-        velocity.x = 0.f;
+    previousPosition = position;
 
-    // Animation
+    //-------------------------------------
+    // Animation : frames + flip
+    //-------------------------------------
     if (frameCount > 1)
     {
         timer += deltaTime;
@@ -87,15 +90,64 @@ void GameCharacter::update(float deltaTime, const std::vector<std::unique_ptr<Gr
         {
             timer = 0.f;
             currentFrame = (currentFrame + 1) % frameCount;
-            sprite.setTextureRect(sf::IntRect(
-                currentFrame * frameWidth, 0, frameWidth, frameHeight));
         }
+
+        // Calculer l’IntRect final
+        sf::IntRect rect;
+        rect.top = 0;
+        rect.height = frameHeight;
+
+        if (facingLeft)
+        {
+            rect.left = (currentFrame + 1) * frameWidth;
+            rect.width = -frameWidth; // flip horizontal
+        }
+        else
+        {
+            rect.left = currentFrame * frameWidth;
+            rect.width = frameWidth;
+        }
+
+        sprite.setTextureRect(rect);
     }
-    // Repositionner le sprite final
+
+    // Repositionner le sprite
     sprite.setPosition(position);
 
     if (attackCooldown > 0.f)
         attackCooldown -= deltaTime;
+}
+
+/**
+ * @brief Définit la texture d'animation pour un état donné.
+ *
+ * @param state L'état d'animation (Idle, Walk, etc.)
+ * @param texture La texture associée à cet état
+ */
+void GameCharacter::setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps)
+{
+    animations[state] = {texture, frameCount, frameWidth, frameHeight, 1.f / fps};
+}
+
+void GameCharacter::setAnimationState(AnimationState newState)
+{
+    if (currentState != newState)
+    {
+        currentState = newState;
+        auto it = animations.find(newState);
+        if (it != animations.end())
+        {
+            const auto &anim = it->second;
+            sprite.setTexture(*anim.texture);
+            frameCount = anim.frameCount;
+            frameWidth = anim.frameWidth;
+            frameHeight = anim.frameHeight;
+            frameTime = anim.frameTime;
+            currentFrame = 0;
+            timer = 0.f;
+            sprite.setTextureRect(sf::IntRect(0, 0, frameWidth, frameHeight));
+        }
+    }
 }
 
 sf::FloatRect GameCharacter::getBounds() const

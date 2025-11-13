@@ -9,16 +9,23 @@
  */
 std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windowSize)
 {
-    auto texture = std::make_shared<sf::Texture>();
-    if (!texture->loadFromFile("../src/assets/images/playerBaseAnimation.png"))
+    auto textureIdle = std::make_shared<sf::Texture>();
+    if (!textureIdle->loadFromFile("../src/assets/images/playerIdleAnimation.png"))
     {
         std::cerr << "Failed to load player texture!" << std::endl;
         return nullptr;
     }
+    auto textureWalk = std::make_shared<sf::Texture>();
+    if (!textureWalk->loadFromFile("../src/assets/images/playerWalkAnimation.png"))
+    {
+        std::cerr << "Failed to load player walk texture!" << std::endl;
+        return nullptr;
+    }
 
-    auto player = std::make_unique<Player>("Player", 100, 50, 500.f, texture);
+    auto player = std::make_unique<Player>("Player", 100, 50, 500.f, textureIdle);
+    player->setAnimationTexture(AnimationState::Idle, textureIdle, 1, 32, 32, 1.f);
+    player->setAnimationTexture(AnimationState::Walk, textureWalk, 4, 32, 32, 6.f);
     player->setPosition(windowSize.x / 2.f, windowSize.y / 2.f);
-    player->setAnimationParams(1, 32, 32, 1.f);
     player->setHitbox(5.f, 7.f, 17.f, 25.f);
 
     return player;
