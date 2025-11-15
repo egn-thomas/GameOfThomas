@@ -32,150 +32,105 @@ GameCharacter::GameCharacter(const std::string &name, int hp, int mana, float sp
 void GameCharacter::update(float deltaTime, const std::vector<std::unique_ptr<Ground>> &grounds)
 {
     // Réinitialiser les états de contact
-    contactTop = contactBottom = contactLeft = contactRight = false;
-    onGround = false;
+    collisionsToZero();
 
-    // Détection de mouvement horizontal réel
-    float deltaX = position.x - previousPosition.x;
-    const float moveThreshold = 1.0f;
-
-    if (std::abs(deltaX) > moveThreshold)
-    {
-        stillTimer = 0.f;
-        setAnimationState(AnimationState::Walk);
-
-        // Déterminer l’orientation
-        facingLeft = (deltaX < 0.f);
-    }
-    else
-    {
-        stillTimer += deltaTime;
-        if (stillTimer > 0.1f)
-            setAnimationState(AnimationState::Idle);
-    }
-
-    //-------------------------------------
     // DASH / Gravité / Déplacement
-    //-------------------------------------
+    applyAllForces(deltaTime);
+
+    // Animation : frames + flip
+    // Détection de mouvement horizontal réel et adaptation du cycle de marche
+    selfAnimator(deltaTime);
+
+    // Collisions
+    checkAllCollisions(grounds);
+    applyCollisions();
+
+    // Cooldowns
+    allCooldowns(deltaTime);
+    if (attackCooldown > 0.f)
+        attackCooldown -= deltaTime;
+}
+
+//--------------------------------------------------------------------------------------
+//                          Position et Mouvement
+//--------------------------------------------------------------------------------------
+
+/**
+ * @brief Applique toutes les forces (dash, gravité, etc.) pour mettre à jour la position du personnage.
+ *
+ * @param deltaTime Le temps écoulé depuis le dernier update, en secondes.
+ */
+void GameCharacter::applyAllForces(float deltaTime)
+{
     if (isDashing)
     {
         sf::Vector2f dashOffset(dashDirection * dashSpeed * deltaTime, velocity.y * deltaTime);
         position += dashOffset;
         dashTimer -= deltaTime;
-        if (dashTimer <= 0.f) isDashing = false;
+        if (dashTimer <= 0.f)
+            isDashing = false;
     }
     else
     {
-        if (!contactBottom) applyGravity(deltaTime);
-        position += velocity * deltaTime;
+        if (!onGround)
+            this->applyGravity(deltaTime);
+        position += sf::Vector2f(velocity.x * deltaTime, velocity.y * deltaTime);
     }
+}
 
-    //-------------------------------------
-    // Collisions
-    //-------------------------------------
-    checkAllCollisions(grounds);
-    if (contactBottom) { velocity.y = 0.f; onGround = true; canDash = true; }
-    if (contactTop) velocity.y = std::min(velocity.y, 0.f);
-    if (contactLeft || contactRight) velocity.x = 0.f;
+/**
+ * @brief Fonction qui applique la gravité au personnage
+ *
+ * @param deltatime Le temps écoulé depuis la dernière mise à jour.
+ */
+void GameCharacter::applyGravity(float deltaTime)
+{
+    if (!onGround)
+        velocity.y += gravity * deltaTime;
+}
+
+/**
+ * @brief Déplace le personnage selon un vecteur
+ *
+ *  @param offset Le vecteur en paramètre
+ */
+void GameCharacter::move(const sf::Vector2f &offset)
+{
+    position += offset;
+    sprite.setPosition(position);
+}
+
+/**
+ * @brief Déclenche le dash d'un personnage.
+ */
+void GameCharacter::startDash(int direction)
+{
+    if (canDash && !isDashing)
+    {
+        isDashing = true;
+        dashTimer = dashDuration;
+        dashDirection = direction;
+        canDash = false; // sera réactivé à la prochaine collision avec le sol
+    }
+}
+
+/**
+ * @brief Applique les ajustements de position suite aux collisions détectées.
+ */
+void GameCharacter::applyCollisions()
+{
+    if (contactBottom)
+    {
+        velocity.y = 0.f;
+        onGround = true;
+        canDash = true;
+    }
+    if (contactTop)
+        velocity.y = std::min(velocity.y, 0.f);
+    if (contactLeft || contactRight)
+        velocity.x = 0.f;
 
     previousPosition = position;
-
-    //-------------------------------------
-    // Animation : frames + flip
-    //-------------------------------------
-    if (frameCount > 1)
-    {
-        timer += deltaTime;
-        if (timer >= frameTime)
-        {
-            timer = 0.f;
-            currentFrame = (currentFrame + 1) % frameCount;
-        }
-
-        // Calculer l’IntRect final
-        sf::IntRect rect;
-        rect.top = 0;
-        rect.height = frameHeight;
-
-        if (facingLeft)
-        {
-            rect.left = (currentFrame + 1) * frameWidth;
-            rect.width = -frameWidth; // flip horizontal
-        }
-        else
-        {
-            rect.left = currentFrame * frameWidth;
-            rect.width = frameWidth;
-        }
-
-        sprite.setTextureRect(rect);
-    }
-
-    // Repositionner le sprite
-    sprite.setPosition(position);
-
-    if (attackCooldown > 0.f)
-        attackCooldown -= deltaTime;
-}
-
-/**
- * @brief Définit la texture d'animation pour un état donné.
- *
- * @param state L'état d'animation (Idle, Walk, etc.)
- * @param texture La texture associée à cet état
- */
-void GameCharacter::setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps)
-{
-    animations[state] = {texture, frameCount, frameWidth, frameHeight, 1.f / fps};
-}
-
-void GameCharacter::setAnimationState(AnimationState newState)
-{
-    if (currentState != newState)
-    {
-        currentState = newState;
-        auto it = animations.find(newState);
-        if (it != animations.end())
-        {
-            const auto &anim = it->second;
-            sprite.setTexture(*anim.texture);
-            frameCount = anim.frameCount;
-            frameWidth = anim.frameWidth;
-            frameHeight = anim.frameHeight;
-            frameTime = anim.frameTime;
-            currentFrame = 0;
-            timer = 0.f;
-            sprite.setTextureRect(sf::IntRect(0, 0, frameWidth, frameHeight));
-        }
-    }
-}
-
-sf::FloatRect GameCharacter::getBounds() const
-{
-    return sf::FloatRect(
-        position.x + hitbox.left,
-        position.y + hitbox.top,
-        hitbox.width,
-        hitbox.height);
-}
-
-/**
- * @brief Définit la hitbox du personnage
- *
- * @param offsetX Décalage en X par rapport à la position du sprite
- * @param offsetY Décalage en Y par rapport à la position du sprite
- * @param width Largeur de la hitbox
- * @param height Hauteur de la hitbox
- */
-void GameCharacter::setHitbox(float offsetX, float offsetY, float width, float height)
-{
-    float scaleX = sprite.getScale().x;
-    float scaleY = sprite.getScale().y;
-    offsetX *= scaleX;
-    offsetY *= scaleY;
-    width *= scaleX;
-    height *= scaleY;
-    hitbox = sf::FloatRect(offsetX, offsetY, width, height);
 }
 
 /**
@@ -243,30 +198,191 @@ void GameCharacter::checkCollisionWithGround(const Ground &ground)
 }
 
 /**
- * @brief Fonction qui applique la gravité au personnage
- *
- * @param deltatime Le temps écoulé depuis la dernière mise à jour.
+ * @brief Reset tous les attributs de collisions a 0.
  */
-void GameCharacter::applyGravity(float deltaTime)
+void GameCharacter::collisionsToZero()
 {
-    if (!onGround)
-        velocity.y += gravity * deltaTime;
+    contactTop = contactBottom = contactLeft = contactRight = false;
+    onGround = false;
 }
 
 /**
- * @brief Déclenche le dash d'un personnage.
+ * @brief Définit la hitbox du personnage
+ *
+ * @param offsetX Décalage en X par rapport à la position du sprite
+ * @param offsetY Décalage en Y par rapport à la position du sprite
+ * @param width Largeur de la hitbox
+ * @param height Hauteur de la hitbox
  */
-void GameCharacter::startDash(int direction)
+void GameCharacter::setHitbox(float offsetX, float offsetY, float width, float height)
 {
-    if (canDash && !isDashing)
+    float scaleX = sprite.getScale().x;
+    float scaleY = sprite.getScale().y;
+    offsetX *= scaleX;
+    offsetY *= scaleY;
+    width *= scaleX;
+    height *= scaleY;
+    hitbox = sf::FloatRect(offsetX, offsetY, width, height);
+}
+
+/**
+ * @brief Retourne les limites (hitbox) du personnage sous forme de sf::FloatRect
+ *
+ * @return sf::FloatRect Les limites du personnage
+ */
+sf::FloatRect GameCharacter::getBounds() const
+{
+    return sf::FloatRect(
+        position.x + hitbox.left,
+        position.y + hitbox.top,
+        hitbox.width,
+        hitbox.height);
+}
+
+//--------------------------------------------------------------------------------------
+//                          Animation et Visuel
+//--------------------------------------------------------------------------------------
+
+/**
+ * @brief Gère l'animation du personnage lorsqu'il est immobile ou en mouvement.
+ *
+ * @param deltaTime Le temps écoulé depuis le dernier update, en secondes.
+ */
+void GameCharacter::selfAnimator(float deltaTime)
+{
+    walkAnimator(deltaTime);
+    if (frameCount > 1)
     {
-        isDashing = true;
-        dashTimer = dashDuration;
-        dashDirection = direction;
-        canDash = false; // sera réactivé à la prochaine collision avec le sol
+        timer += deltaTime;
+        if (timer >= frameTime)
+        {
+            timer = 0.f;
+            currentFrame = (currentFrame + 1) % frameCount;
+        }
+
+        // Calculer l’IntRect final
+        sf::IntRect rect;
+        rect.top = 0;
+        rect.height = frameHeight;
+
+        if (facingLeft)
+        {
+            rect.left = (currentFrame + 1) * frameWidth;
+            rect.width = -frameWidth; // flip horizontal
+        }
+        else
+        {
+            rect.left = currentFrame * frameWidth;
+            rect.width = frameWidth;
+        }
+
+        sprite.setTextureRect(rect);
+    }
+
+    // Repositionner le sprite
+    sprite.setPosition(position);
+}
+
+/**
+ * @brief Choisis la bonne animation de marche en fonction de la direction sur l'axe "x" du personnage concerné
+ *
+ * @param deltaTime Delta-time de la boucle update
+ */
+void GameCharacter::walkAnimator(float deltaTime)
+{
+    float deltaX = position.x - previousPosition.x;
+    const float moveThreshold = 1.0f;
+
+    if (std::abs(deltaX) > moveThreshold)
+    {
+        stillTimer = 0.f;
+        setAnimationState(AnimationState::Walk);
+
+        // Déterminer l’orientation
+        facingLeft = (deltaX < 0.f);
+    }
+    else
+    {
+        stillTimer += deltaTime;
+        if (stillTimer > 0.1f)
+            setAnimationState(AnimationState::Idle);
     }
 }
 
+/**
+ * @brief Définit la texture d'animation pour un état donné.
+ *
+ * @param state L'état d'animation (Idle, Walk, etc.)
+ * @param texture La texture associée à cet état
+ */
+void GameCharacter::setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps)
+{
+    animations[state] = {texture, frameCount, frameWidth, frameHeight, 1.f / fps};
+}
+
+/**
+ * @brief Change l'état d'animation actuel du personnage.
+ *
+ * @param newState Le nouvel état d'animation à appliquer.
+ */
+void GameCharacter::setAnimationState(AnimationState newState)
+{
+    if (currentState != newState)
+    {
+        currentState = newState;
+        auto it = animations.find(newState);
+        if (it != animations.end())
+        {
+            const auto &anim = it->second;
+            sprite.setTexture(*anim.texture);
+            frameCount = anim.frameCount;
+            frameWidth = anim.frameWidth;
+            frameHeight = anim.frameHeight;
+            frameTime = anim.frameTime;
+            currentFrame = 0;
+            timer = 0.f;
+            sprite.setTextureRect(sf::IntRect(0, 0, frameWidth, frameHeight));
+        }
+    }
+}
+
+/**
+ * @brief Dessine le personnage
+ *
+ * @param window La fenetre ou on veut dessiner le personnage
+ */
+void GameCharacter::draw(sf::RenderWindow &window)
+{
+    window.draw(sprite);
+}
+
+/**
+ * @brief Définit les paramètres d'animation du personnage
+ *
+ * @param count Le nombre de frames de l'animation
+ * @param width La largeur d'une frame
+ * @param height La hauteur d'une frame
+ * @param fps Le nombre de frames par seconde
+ */
+void GameCharacter::setAnimationParams(int count, int width, int height, float fps)
+{
+    frameCount = count;
+    frameWidth = width;
+    frameHeight = height;
+    frameTime = 1.f / fps;
+    sprite.setTextureRect(sf::IntRect(0, 0, width, height));
+}
+
+//--------------------------------------------------------------------------------------
+//                          Combat et Stats
+//--------------------------------------------------------------------------------------
+
+/**
+ * @brief Effectue une attaque dans une direction donnée, affectant les cibles touchées.
+ *
+ * @param dir La direction de l'attaque (gauche ou droite).
+ * @param targets Un vecteur de pointeurs vers les cibles potentielles.
+ */
 void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets)
 {
     if (attackCooldown > 0.f)
@@ -316,8 +432,17 @@ void GameCharacter::takeDamage(int dmg)
     hp -= dmg;
     if (hp < 0)
         hp = 0;
+    isDamaged = true;
+    damageTimer = 0.5f;
+    sprite.setColor(sf::Color(255, 100, 100));
 }
 
+/**
+ * @brief Vérifie si le personnage est encore en vie
+ *
+ * @return true Si le personnage a des points de vie restants
+ * @return false Si le personnage n'a plus de points de vie
+ */
 bool GameCharacter::isAlive() const
 {
     if (this->hp == 0)
@@ -331,31 +456,24 @@ bool GameCharacter::isAlive() const
 }
 
 /**
- * @brief Dessine le personnage
- *
- * @param window La fenetre ou on veut dessiner le personnage
+ * @brief Met à jour tous les cooldowns du personnage
  */
-void GameCharacter::draw(sf::RenderWindow &window)
+void GameCharacter::allCooldowns(float deltaTime)
 {
-    window.draw(sprite);
+    if (attackCooldown > 0.f)
+        attackCooldown -= deltaTime;
+    if (damageTimer > 0.f)
+    {
+        damageTimer -= deltaTime;
+    } else {
+        isDamaged = false;
+        sprite.setColor(sf::Color(255, 255, 255));
+    }
 }
 
-/**
- * @brief Définit les paramètres d'animation du personnage
- *
- * @param count Le nombre de frames de l'animation
- * @param width La largeur d'une frame
- * @param height La hauteur d'une frame
- * @param fps Le nombre de frames par seconde
- */
-void GameCharacter::setAnimationParams(int count, int width, int height, float fps)
-{
-    frameCount = count;
-    frameWidth = width;
-    frameHeight = height;
-    frameTime = 1.f / fps;
-    sprite.setTextureRect(sf::IntRect(0, 0, width, height));
-}
+//--------------------------------------------------------------------------------------
+//                          Getters & Setters
+//--------------------------------------------------------------------------------------
 
 /**
  * @brief Place le personnage à la position passée en paramètres
@@ -373,17 +491,6 @@ void GameCharacter::setPosition(float x, float y)
  * @return La position du personnage
  */
 sf::Vector2f GameCharacter::getPosition() const { return position; }
-
-/**
- * @brief Déplace le personnage selon unn vecteur
- *
- *  @param offset Le vecteur en paramètre
- */
-void GameCharacter::move(const sf::Vector2f &offset)
-{
-    position += offset;
-    sprite.setPosition(position);
-}
 
 /**
  * @return La vitesse du personnage

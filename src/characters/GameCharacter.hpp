@@ -61,6 +61,9 @@ private:
     float attackCooldown;                 // Temps restant avant la prochaine attaque
     const float attackCooldownMax = 0.5f; // Durée du cooldown en secondes
 
+    bool isDamaged = false;
+    float damageTimer = 0.f;
+
 protected:
     std::shared_ptr<sf::Texture> texture;
     bool onGround = false;
@@ -87,36 +90,42 @@ public:
 
     void update(float deltaTime, const std::vector<std::unique_ptr<Ground>> &grounds);
 
-    // Visuel et animation
+    // Position et mouvement
 
+    void applyAllForces(float deltaTime);
+    void applyGravity(float deltaTime);
+    void move(const sf::Vector2f &offset);
+    void startDash(int direction);
+    void applyCollisions();
+    void checkAllCollisions(const std::vector<std::unique_ptr<Ground>> &grounds);
+    void checkCollisionWithGround(const Ground &ground);
+    void collisionsToZero();
+    void setHitbox(float offsetX, float offsetY, float width, float height);
+    virtual sf::FloatRect getBounds() const;
+    bool isOnGround() const { return onGround; }
+    
+    // Visuel et animation
+    
+    void selfAnimator(float deltaTime);
+    void walkAnimator(float deltaTime);
     void setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps);
     void setAnimationState(AnimationState newState);
     virtual void draw(sf::RenderWindow &window);
     void setAnimationParams(int frameCount, int frameWidth, int frameHeight, float fps);
-
-    // Position et mouvement
-
-    void setPosition(float x, float y);
-    void move(const sf::Vector2f &offset);
-    void applyGravity(float deltaTime);
-    bool isOnGround() const { return onGround; }
-    virtual sf::FloatRect getBounds() const;
-    void checkAllCollisions(const std::vector<std::unique_ptr<Ground>> &grounds);
-    void checkCollisionWithGround(const Ground &ground);
-    void startDash(int direction);
-    void setHitbox(float offsetX, float offsetY, float width, float height);
-
+    
     // Combat
-
+    
     void attack(Direction dir, std::vector<GameCharacter *> targets);
-
+    
     // Gestion des stats
-
+    
     void takeDamage(int dmg);
     bool isAlive() const;
-
+    void allCooldowns(float deltaTime);
+    
     // Getters
     float getSpeed() const;
+    void setPosition(float x, float y);
     sf::Vector2f getPosition() const;
     sf::Sprite &getSprite();
     int getHp() const;

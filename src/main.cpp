@@ -31,10 +31,10 @@ int main()
     sf::Clock clock;
 
     bool isPaused = false;
+
     //---------------------------------
     // Boucle principale
     //---------------------------------
-
     while (window.isOpen())
     {
         float deltaTime = clock.restart().asSeconds();
