@@ -12,6 +12,8 @@ add_executable(main
     src/characters/NonPlayer.cpp
     src/events/EventManager.cpp
     src/events/MoveEvent.cpp
+    src/environnement/ModelGenerator.cpp
+    src/environnement/Node.cpp
     src/environnement/Ground.cpp
     src/environnement/TexturedGround.cpp
     src/DevMode.cpp
