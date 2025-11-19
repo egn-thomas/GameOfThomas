@@ -12,14 +12,15 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
     auto textureIdle = std::make_shared<sf::Texture>();
     if (!textureIdle->loadFromFile("../src/assets/images/playerIdleAnimation.png"))
     {
-        std::cerr << "Failed to load player texture!" << std::endl;
-        return nullptr;
+        std::cerr << "Failed to load player texture! Using empty fallback texture." << std::endl;
+        // create a small empty texture as a safe fallback so the game can run without assets
+        textureIdle->create(32, 32);
     }
     auto textureWalk = std::make_shared<sf::Texture>();
     if (!textureWalk->loadFromFile("../src/assets/images/playerWalkAnimation.png"))
     {
-        std::cerr << "Failed to load player walk texture!" << std::endl;
-        return nullptr;
+        std::cerr << "Failed to load player walk texture! Using empty fallback texture." << std::endl;
+        textureWalk->create(32, 32);
     }
 
     auto player = std::make_unique<Player>("Player", 100, 50, 500.f, textureIdle);
@@ -46,8 +47,8 @@ std::vector<std::unique_ptr<NonPlayer>> CharacterFactory::createNonPlayer(
     auto pnjTexture = std::make_shared<sf::Texture>();
     if (!pnjTexture->loadFromFile("../src/assets/images/nonPlayerBaseAnimation.png"))
     {
-        std::cerr << "Failed to load nonPlayer texture!" << std::endl;
-        return {};
+        std::cerr << "Failed to load nonPlayer texture! Using empty fallback texture." << std::endl;
+        pnjTexture->create(32, 32);
     }
 
     // PNJ 1

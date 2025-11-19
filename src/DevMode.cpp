@@ -13,9 +13,13 @@ DevMode::DevMode(bool active) : active(active)
     if (!font.loadFromFile("../src/assets/fonts/RobotoMono-Regular.ttf"))
     {
         std::cerr << "Impossible de charger la police pour DevMode\n";
+        fontLoaded = false;
     }
-
-    text.setFont(font);
+    else
+    {
+        fontLoaded = true;
+        text.setFont(font);
+    }
     text.setCharacterSize(14);
     text.setFillColor(sf::Color::Red);
     text.setPosition(10.f, 10.f);
@@ -43,8 +47,48 @@ void DevMode::drawInfo(sf::RenderWindow &window, const GameCharacter &player, st
         ss << character->getName() << " : " << character->getHp() << "\n";
     }    
 
-    text.setString(ss.str());
-    window.draw(text);
+    if (fontLoaded)
+    {
+        text.setString(ss.str());
+        window.draw(text);
+    }
+}
+
+void DevMode::drawDebugOverlays(sf::RenderWindow &window, const GameCharacter &player, const std::vector<std::unique_ptr<Ground>>& grounds, std::vector<GameCharacter *> allCharacters)
+{
+    if (!active) return;
+
+    // draw grounds bounds outlines
+    for (const auto &g : grounds)
+    {
+        sf::RectangleShape s = g->getShape();
+        s.setFillColor(sf::Color::Transparent);
+        s.setOutlineColor(sf::Color::Green);
+        s.setOutlineThickness(1.f);
+        window.draw(s);
+    }
+
+    // draw player hitbox
+    sf::FloatRect pb = player.getBounds();
+    sf::RectangleShape ph(sf::Vector2f(pb.width, pb.height));
+    ph.setPosition(pb.left, pb.top);
+    ph.setFillColor(sf::Color::Transparent);
+    ph.setOutlineColor(sf::Color::Yellow);
+    ph.setOutlineThickness(1.f);
+    window.draw(ph);
+
+    // draw other characters hitboxes
+    for (auto c : allCharacters)
+    {
+        if (c == &player) continue;
+        sf::FloatRect cb = c->getBounds();
+        sf::RectangleShape ch(sf::Vector2f(cb.width, cb.height));
+        ch.setPosition(cb.left, cb.top);
+        ch.setFillColor(sf::Color::Transparent);
+        ch.setOutlineColor(sf::Color::Magenta);
+        ch.setOutlineThickness(1.f);
+        window.draw(ch);
+    }
 }
 
 /**

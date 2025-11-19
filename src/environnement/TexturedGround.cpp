@@ -33,3 +33,25 @@ void TexturedGround::draw(sf::RenderWindow& window)
 {
     window.draw(texturedShape);
 }
+
+sf::Texture* TexturedGround::getDefaultTexture()
+{
+    static sf::Texture defaultTexture;
+    static bool isLoaded = false;
+
+    if (!isLoaded)
+    {
+        if (!defaultTexture.loadFromFile("../src/assets/images/brick.png"))
+        {
+            std::cerr << "Erreur : impossible de charger ../src/assets/images/brick.png\n";
+        }
+        else
+        {
+            defaultTexture.setRepeated(true);
+            isLoaded = true;
+            std::cout << "Texture par défaut chargée avec succès\n";
+        }
+    }
+
+    return &defaultTexture;
+}
