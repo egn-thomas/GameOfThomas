@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "factories/CharacterFactory.hpp"
-#include "factories/GroundFactory.hpp"
 #include "events/EventManager.hpp"
 #include "DevMode.hpp"
 
@@ -50,7 +49,6 @@ int main()
     //---------------------------------
     auto player = CharacterFactory::createPlayer(window.getSize());
     auto npcs = CharacterFactory::createNonPlayer(window.getSize(), {2.5f, 2.f});
-    // auto grounds = GroundFactory::createDefaultGrounds(window.getSize());
 
     std::vector<std::unique_ptr<Block>> blocks;
     std::vector<std::unique_ptr<Ground>> grounds;

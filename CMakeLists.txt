@@ -7,7 +7,6 @@ find_package(SFML 2.5 COMPONENTS system window graphics audio network REQUIRED)
 
 add_executable(main
     src/main.cpp
-    src/blocks/LeftExitBlock.cpp
     src/blocks/ExitBlock.cpp
     src/characters/GameCharacter.cpp
     src/characters/Player.cpp
@@ -19,7 +18,6 @@ add_executable(main
     src/environnement/Ground.cpp
     src/environnement/TexturedGround.cpp
     src/DevMode.cpp
-    src/factories/GroundFactory.cpp
     src/factories/CharacterFactory.cpp
     src/factories/BlockFactory.cpp
 )

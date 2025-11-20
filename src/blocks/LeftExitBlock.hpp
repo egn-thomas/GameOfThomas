@@ -6,7 +6,7 @@
 class LeftExitBlock : public ExitBlock
 {
 public:
-    LeftExitBlock(int posx, int posy, sf::RenderWindow& window);
+    LeftExitBlock(int posx, int posy, sf::RenderWindow& window) : ExitBlock(LEFT_EXIT, posx, posy, window) {};
 };
 
 #endif
