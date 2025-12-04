@@ -36,3 +36,10 @@ const sf::FloatRect Ground::getBounds() const {
 sf::RectangleShape Ground::getShape() {
     return shape;
 }
+
+/**
+ * @brief Retourne si le sol est solide ou non.
+ */
+bool Ground::isGroundSolid() const {
+    return isSolid;
+}

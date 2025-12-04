@@ -64,10 +64,12 @@ CMAKE_BINARY_DIR = /home/thomas/Documents/GitHub/GameOfThomas
 
 # The main recursive "all" target.
 all: CMakeFiles/main.dir/all
+all: CMakeFiles/debug_maze.dir/all
 .PHONY : all
 
 # The main recursive "codegen" target.
 codegen: CMakeFiles/main.dir/codegen
+codegen: CMakeFiles/debug_maze.dir/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
@@ -76,6 +78,7 @@ preinstall:
 
 # The main recursive "clean" target.
 clean: CMakeFiles/main.dir/clean
+clean: CMakeFiles/debug_maze.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -85,12 +88,12 @@ clean: CMakeFiles/main.dir/clean
 CMakeFiles/main.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14 "Built target main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 "Built target main"
 .PHONY : CMakeFiles/main.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/main.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/main.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles 0
 .PHONY : CMakeFiles/main.dir/rule
@@ -102,13 +105,45 @@ main: CMakeFiles/main.dir/rule
 # codegen rule for target.
 CMakeFiles/main.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14 "Finished codegen for target main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 "Finished codegen for target main"
 .PHONY : CMakeFiles/main.dir/codegen
 
 # clean rule for target.
 CMakeFiles/main.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/clean
 .PHONY : CMakeFiles/main.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/debug_maze.dir
+
+# All Build rule for target.
+CMakeFiles/debug_maze.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/debug_maze.dir/build.make CMakeFiles/debug_maze.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/debug_maze.dir/build.make CMakeFiles/debug_maze.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=1,2,3,4 "Built target debug_maze"
+.PHONY : CMakeFiles/debug_maze.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/debug_maze.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles 4
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/debug_maze.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles 0
+.PHONY : CMakeFiles/debug_maze.dir/rule
+
+# Convenience name for target.
+debug_maze: CMakeFiles/debug_maze.dir/rule
+.PHONY : debug_maze
+
+# codegen rule for target.
+CMakeFiles/debug_maze.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/debug_maze.dir/build.make CMakeFiles/debug_maze.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=1,2,3,4 "Finished codegen for target debug_maze"
+.PHONY : CMakeFiles/debug_maze.dir/codegen
+
+# clean rule for target.
+CMakeFiles/debug_maze.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/debug_maze.dir/build.make CMakeFiles/debug_maze.dir/clean
+.PHONY : CMakeFiles/debug_maze.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

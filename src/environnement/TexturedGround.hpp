@@ -1,11 +1,5 @@
 #pragma once
 #include "Ground.hpp"
-#include "TexturedGround.hpp"
-#include <SFML/Graphics.hpp>
-#include <string>
-
-#pragma once
-#include "Ground.hpp"
 #include <SFML/Graphics.hpp>
 
 class TexturedGround : public Ground {

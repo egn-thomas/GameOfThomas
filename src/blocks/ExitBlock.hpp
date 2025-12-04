@@ -4,6 +4,7 @@
 #include "Block.hpp"
 #include "BlockEnum.hpp"
 #include "../environnement/TexturedGround.hpp"
+#include "../environnement/LadderGround.hpp"
 #include <vector>
 #include <memory>
 

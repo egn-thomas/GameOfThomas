@@ -45,6 +45,13 @@ void GameCharacter::update(float deltaTime, const std::vector<std::unique_ptr<Gr
     checkAllCollisions(grounds);
     applyCollisions();
 
+    // If we are climbing, disable gravity effects on next frame
+    if (isClimbing)
+    {
+        // while climbing we don't want gravity to accumulate
+        velocity.y = 0.f;
+    }
+
     // Cooldowns
     allCooldowns(deltaTime);
     if (attackCooldown > 0.f)
@@ -72,9 +79,17 @@ void GameCharacter::applyAllForces(float deltaTime)
     }
     else
     {
-        if (!onGround)
-            this->applyGravity(deltaTime);
-        position += sf::Vector2f(velocity.x * deltaTime, velocity.y * deltaTime);
+        // If climbing, do not apply gravity and allow vertical movement through velocity
+        if (isClimbing)
+        {
+            position += sf::Vector2f(velocity.x * deltaTime, velocity.y * deltaTime);
+        }
+        else
+        {
+            if (!onGround)
+                this->applyGravity(deltaTime);
+            position += sf::Vector2f(velocity.x * deltaTime, velocity.y * deltaTime);
+        }
     }
 }
 
@@ -105,8 +120,9 @@ void GameCharacter::move(const sf::Vector2f &offset)
  */
 void GameCharacter::startDash(int direction)
 {
-    if (canDash && !isDashing)
+    if (canDash && !isDashing && dashCooldown <= 0.f)
     {
+        dashCooldown = dashCooldownMax;
         isDashing = true;
         dashTimer = dashDuration;
         dashDirection = direction;
@@ -140,8 +156,23 @@ void GameCharacter::applyCollisions()
  */
 void GameCharacter::checkAllCollisions(const std::vector<std::unique_ptr<Ground>> &grounds)
 {
+    // Reset ladder flag; we'll set it when we detect an overlap
+    onLadder = false;
+
     for (const auto &ground : grounds)
-        checkCollisionWithGround(*ground);
+    {
+        // If this ground is a ladder, detect overlap but do not treat as solid
+        if (ground->isLadder())
+        {
+            if (getBounds().intersects(ground->getBounds()))
+            {
+                onLadder = true;
+            }
+        }
+        // For normal solids, perform collision response
+        if (ground->isGroundSolid())
+            checkCollisionWithGround(*ground);
+    }
 }
 
 /**
@@ -155,7 +186,7 @@ void GameCharacter::checkCollisionWithGround(const Ground &ground)
     sf::FloatRect playerBounds = getBounds();
     sf::FloatRect groundBounds = ground.getBounds();
 
-    if (playerBounds.intersects(groundBounds))
+    if (playerBounds.intersects(groundBounds) && ground.isGroundSolid())
     {
         float overlapLeft = (playerBounds.left + playerBounds.width) - groundBounds.left;
         float overlapRight = (groundBounds.left + groundBounds.width) - playerBounds.left;
@@ -460,6 +491,8 @@ bool GameCharacter::isAlive() const
  */
 void GameCharacter::allCooldowns(float deltaTime)
 {
+    if (dashCooldown > 0.f)
+        dashCooldown -= deltaTime;
     if (attackCooldown > 0.f)
         attackCooldown -= deltaTime;
     if (damageTimer > 0.f)

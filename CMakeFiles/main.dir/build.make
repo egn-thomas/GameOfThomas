@@ -86,10 +86,24 @@ CMakeFiles/main.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/main.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/thomas/Documents/GitHub/GameOfThomas/src/main.cpp -o CMakeFiles/main.dir/src/main.cpp.s
 
+CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o: src/blocks/ExitBlock.cpp
+CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o -MF CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o.d -o CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/blocks/ExitBlock.cpp
+
+CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/thomas/Documents/GitHub/GameOfThomas/src/blocks/ExitBlock.cpp > CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.i
+
+CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/thomas/Documents/GitHub/GameOfThomas/src/blocks/ExitBlock.cpp -o CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.s
+
 CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o: src/characters/GameCharacter.cpp
 CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o -MF CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o.d -o CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/characters/GameCharacter.cpp
 
 CMakeFiles/main.dir/src/characters/GameCharacter.cpp.i: cmake_force
@@ -103,7 +117,7 @@ CMakeFiles/main.dir/src/characters/GameCharacter.cpp.s: cmake_force
 CMakeFiles/main.dir/src/characters/Player.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/characters/Player.cpp.o: src/characters/Player.cpp
 CMakeFiles/main.dir/src/characters/Player.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/main.dir/src/characters/Player.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/main.dir/src/characters/Player.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/characters/Player.cpp.o -MF CMakeFiles/main.dir/src/characters/Player.cpp.o.d -o CMakeFiles/main.dir/src/characters/Player.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/characters/Player.cpp
 
 CMakeFiles/main.dir/src/characters/Player.cpp.i: cmake_force
@@ -117,7 +131,7 @@ CMakeFiles/main.dir/src/characters/Player.cpp.s: cmake_force
 CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o: src/characters/NonPlayer.cpp
 CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o -MF CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o.d -o CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/characters/NonPlayer.cpp
 
 CMakeFiles/main.dir/src/characters/NonPlayer.cpp.i: cmake_force
@@ -131,7 +145,7 @@ CMakeFiles/main.dir/src/characters/NonPlayer.cpp.s: cmake_force
 CMakeFiles/main.dir/src/events/EventManager.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/events/EventManager.cpp.o: src/events/EventManager.cpp
 CMakeFiles/main.dir/src/events/EventManager.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/main.dir/src/events/EventManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/main.dir/src/events/EventManager.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/events/EventManager.cpp.o -MF CMakeFiles/main.dir/src/events/EventManager.cpp.o.d -o CMakeFiles/main.dir/src/events/EventManager.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/events/EventManager.cpp
 
 CMakeFiles/main.dir/src/events/EventManager.cpp.i: cmake_force
@@ -145,7 +159,7 @@ CMakeFiles/main.dir/src/events/EventManager.cpp.s: cmake_force
 CMakeFiles/main.dir/src/events/MoveEvent.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/events/MoveEvent.cpp.o: src/events/MoveEvent.cpp
 CMakeFiles/main.dir/src/events/MoveEvent.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/main.dir/src/events/MoveEvent.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/main.dir/src/events/MoveEvent.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/events/MoveEvent.cpp.o -MF CMakeFiles/main.dir/src/events/MoveEvent.cpp.o.d -o CMakeFiles/main.dir/src/events/MoveEvent.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/events/MoveEvent.cpp
 
 CMakeFiles/main.dir/src/events/MoveEvent.cpp.i: cmake_force
@@ -159,7 +173,7 @@ CMakeFiles/main.dir/src/events/MoveEvent.cpp.s: cmake_force
 CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o: src/environnement/ModelGenerator.cpp
 CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o -MF CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o.d -o CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/environnement/ModelGenerator.cpp
 
 CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.i: cmake_force
@@ -173,7 +187,7 @@ CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.s: cmake_force
 CMakeFiles/main.dir/src/environnement/Node.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/environnement/Node.cpp.o: src/environnement/Node.cpp
 CMakeFiles/main.dir/src/environnement/Node.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/main.dir/src/environnement/Node.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/main.dir/src/environnement/Node.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/environnement/Node.cpp.o -MF CMakeFiles/main.dir/src/environnement/Node.cpp.o.d -o CMakeFiles/main.dir/src/environnement/Node.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/environnement/Node.cpp
 
 CMakeFiles/main.dir/src/environnement/Node.cpp.i: cmake_force
@@ -187,7 +201,7 @@ CMakeFiles/main.dir/src/environnement/Node.cpp.s: cmake_force
 CMakeFiles/main.dir/src/environnement/Ground.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/environnement/Ground.cpp.o: src/environnement/Ground.cpp
 CMakeFiles/main.dir/src/environnement/Ground.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/main.dir/src/environnement/Ground.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/main.dir/src/environnement/Ground.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/environnement/Ground.cpp.o -MF CMakeFiles/main.dir/src/environnement/Ground.cpp.o.d -o CMakeFiles/main.dir/src/environnement/Ground.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/environnement/Ground.cpp
 
 CMakeFiles/main.dir/src/environnement/Ground.cpp.i: cmake_force
@@ -201,7 +215,7 @@ CMakeFiles/main.dir/src/environnement/Ground.cpp.s: cmake_force
 CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o: src/environnement/TexturedGround.cpp
 CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o -MF CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o.d -o CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/environnement/TexturedGround.cpp
 
 CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.i: cmake_force
@@ -212,10 +226,24 @@ CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/thomas/Documents/GitHub/GameOfThomas/src/environnement/TexturedGround.cpp -o CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.s
 
+CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o: src/environnement/LadderGround.cpp
+CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o -MF CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o.d -o CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/environnement/LadderGround.cpp
+
+CMakeFiles/main.dir/src/environnement/LadderGround.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/main.dir/src/environnement/LadderGround.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/thomas/Documents/GitHub/GameOfThomas/src/environnement/LadderGround.cpp > CMakeFiles/main.dir/src/environnement/LadderGround.cpp.i
+
+CMakeFiles/main.dir/src/environnement/LadderGround.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/environnement/LadderGround.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/thomas/Documents/GitHub/GameOfThomas/src/environnement/LadderGround.cpp -o CMakeFiles/main.dir/src/environnement/LadderGround.cpp.s
+
 CMakeFiles/main.dir/src/DevMode.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/DevMode.cpp.o: src/DevMode.cpp
 CMakeFiles/main.dir/src/DevMode.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/main.dir/src/DevMode.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/main.dir/src/DevMode.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/DevMode.cpp.o -MF CMakeFiles/main.dir/src/DevMode.cpp.o.d -o CMakeFiles/main.dir/src/DevMode.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/DevMode.cpp
 
 CMakeFiles/main.dir/src/DevMode.cpp.i: cmake_force
@@ -226,24 +254,10 @@ CMakeFiles/main.dir/src/DevMode.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/DevMode.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/thomas/Documents/GitHub/GameOfThomas/src/DevMode.cpp -o CMakeFiles/main.dir/src/DevMode.cpp.s
 
-CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o: CMakeFiles/main.dir/flags.make
-CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o: src/factories/GroundFactory.cpp
-CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o -MF CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o.d -o CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/factories/GroundFactory.cpp
-
-CMakeFiles/main.dir/src/factories/GroundFactory.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/main.dir/src/factories/GroundFactory.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/thomas/Documents/GitHub/GameOfThomas/src/factories/GroundFactory.cpp > CMakeFiles/main.dir/src/factories/GroundFactory.cpp.i
-
-CMakeFiles/main.dir/src/factories/GroundFactory.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/factories/GroundFactory.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/thomas/Documents/GitHub/GameOfThomas/src/factories/GroundFactory.cpp -o CMakeFiles/main.dir/src/factories/GroundFactory.cpp.s
-
 CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o: CMakeFiles/main.dir/flags.make
 CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o: src/factories/CharacterFactory.cpp
 CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o -MF CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o.d -o CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/factories/CharacterFactory.cpp
 
 CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.i: cmake_force
@@ -254,9 +268,24 @@ CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/thomas/Documents/GitHub/GameOfThomas/src/factories/CharacterFactory.cpp -o CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.s
 
+CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o: src/factories/BlockFactory.cpp
+CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o: CMakeFiles/main.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o -MF CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o.d -o CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o -c /home/thomas/Documents/GitHub/GameOfThomas/src/factories/BlockFactory.cpp
+
+CMakeFiles/main.dir/src/factories/BlockFactory.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/main.dir/src/factories/BlockFactory.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/thomas/Documents/GitHub/GameOfThomas/src/factories/BlockFactory.cpp > CMakeFiles/main.dir/src/factories/BlockFactory.cpp.i
+
+CMakeFiles/main.dir/src/factories/BlockFactory.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/main.dir/src/factories/BlockFactory.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/thomas/Documents/GitHub/GameOfThomas/src/factories/BlockFactory.cpp -o CMakeFiles/main.dir/src/factories/BlockFactory.cpp.s
+
 # Object files for target main
 main_OBJECTS = \
 "CMakeFiles/main.dir/src/main.cpp.o" \
+"CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o" \
 "CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o" \
 "CMakeFiles/main.dir/src/characters/Player.cpp.o" \
 "CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o" \
@@ -266,14 +295,16 @@ main_OBJECTS = \
 "CMakeFiles/main.dir/src/environnement/Node.cpp.o" \
 "CMakeFiles/main.dir/src/environnement/Ground.cpp.o" \
 "CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o" \
+"CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o" \
 "CMakeFiles/main.dir/src/DevMode.cpp.o" \
-"CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o" \
-"CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o"
+"CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o" \
+"CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o"
 
 # External object files for target main
 main_EXTERNAL_OBJECTS =
 
 bin/main: CMakeFiles/main.dir/src/main.cpp.o
+bin/main: CMakeFiles/main.dir/src/blocks/ExitBlock.cpp.o
 bin/main: CMakeFiles/main.dir/src/characters/GameCharacter.cpp.o
 bin/main: CMakeFiles/main.dir/src/characters/Player.cpp.o
 bin/main: CMakeFiles/main.dir/src/characters/NonPlayer.cpp.o
@@ -283,9 +314,10 @@ bin/main: CMakeFiles/main.dir/src/environnement/ModelGenerator.cpp.o
 bin/main: CMakeFiles/main.dir/src/environnement/Node.cpp.o
 bin/main: CMakeFiles/main.dir/src/environnement/Ground.cpp.o
 bin/main: CMakeFiles/main.dir/src/environnement/TexturedGround.cpp.o
+bin/main: CMakeFiles/main.dir/src/environnement/LadderGround.cpp.o
 bin/main: CMakeFiles/main.dir/src/DevMode.cpp.o
-bin/main: CMakeFiles/main.dir/src/factories/GroundFactory.cpp.o
 bin/main: CMakeFiles/main.dir/src/factories/CharacterFactory.cpp.o
+bin/main: CMakeFiles/main.dir/src/factories/BlockFactory.cpp.o
 bin/main: CMakeFiles/main.dir/build.make
 bin/main: /usr/lib/x86_64-linux-gnu/libsfml-graphics.so.2.5.1
 bin/main: /usr/lib/x86_64-linux-gnu/libsfml-window.so.2.5.1
@@ -293,7 +325,7 @@ bin/main: /usr/lib/x86_64-linux-gnu/libsfml-audio.so.2.5.1
 bin/main: /usr/lib/x86_64-linux-gnu/libsfml-network.so.2.5.1
 bin/main: /usr/lib/x86_64-linux-gnu/libsfml-system.so.2.5.1
 bin/main: CMakeFiles/main.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX executable bin/main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Linking CXX executable bin/main"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/main.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

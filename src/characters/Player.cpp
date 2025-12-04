@@ -14,11 +14,11 @@ Player::Player(const std::string &name, int hp, int mana, float speed, std::shar
  *
  * @param jumpStrength La force du saut.
  */
-void Player::jump(float jumpStrength)
+void Player::jump()
 {
     if (isOnGround())
     {
-        velocity.y = -jumpStrength; // vers le haut, négatif dans SFML
+        velocity.y = -this->jumpStrength; // vers le haut, négatif dans SFML
         onGround = false;           // on est maintenant en l'air
     }
 }
@@ -30,5 +30,5 @@ void Player::jump(float jumpStrength)
  */
 void Player::draw(sf::RenderWindow &window)
 {
-    GameCharacter::draw(window); // appelle la méthode parent
+    GameCharacter::draw(window);
 }

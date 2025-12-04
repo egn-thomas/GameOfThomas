@@ -44,6 +44,9 @@ private:
     bool contactBottom;
     bool contactLeft;
     bool contactRight;
+    // Ladder / climbing state
+    bool onLadder = false;   // true when overlapping a LadderGround
+    bool isClimbing = false; // true while actively climbing (disables gravity)
 
     // Direction du personnage
     bool facingLeft = false;
@@ -51,10 +54,12 @@ private:
     // --- Dash ---
     bool isDashing = false;
     bool canDash = true;
-    float dashSpeed = 1200.f;
+    float dashSpeed = 900.f;
     float dashDuration = 0.15f;
     float dashTimer = 0.f;
     int dashDirection = 0; // -1 = gauche, +1 = droite
+    float dashCooldown;
+    const float dashCooldownMax = 1.0f; // Durée du cooldown en secondes
 
     // Attack
 
@@ -103,26 +108,28 @@ public:
     void setHitbox(float offsetX, float offsetY, float width, float height);
     virtual sf::FloatRect getBounds() const;
     bool isOnGround() const { return onGround; }
-    
+    bool isOnLadder() const { return onLadder; }
+    void setClimbing(bool c) { isClimbing = c; }
+
     // Visuel et animation
-    
+
     void selfAnimator(float deltaTime);
     void walkAnimator(float deltaTime);
     void setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps);
     void setAnimationState(AnimationState newState);
     virtual void draw(sf::RenderWindow &window);
     void setAnimationParams(int frameCount, int frameWidth, int frameHeight, float fps);
-    
+
     // Combat
-    
+
     void attack(Direction dir, std::vector<GameCharacter *> targets);
-    
+
     // Gestion des stats
-    
+
     void takeDamage(int dmg);
     bool isAlive() const;
     void allCooldowns(float deltaTime);
-    
+
     // Getters
     float getSpeed() const;
     void setPosition(float x, float y);

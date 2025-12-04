@@ -30,8 +30,12 @@ int main()
     sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile("../src/assets/images/castleBackground.png"))
     {
-        std::cerr << "Erreur lors du chargement de la texture de fond." << std::endl;
-        return -1;
+        std::cerr << "Erreur lors du chargement de la texture de fond. Using fallback background." << std::endl;
+        // create a 1x1 white texture as fallback so the game can continue
+        backgroundTexture.create(1, 1);
+        sf::Image img;
+        img.create(1, 1, sf::Color(50, 50, 80));
+        backgroundTexture.update(img);
     }
     sf::Sprite backgroundSprite;
     backgroundSprite.setTexture(backgroundTexture);
@@ -104,6 +108,75 @@ int main()
         std::cout << "Node symmetry check: OK (no mismatches)\n";
     else
         std::cout << "Node symmetry check: " << mismatches << " mismatches found\n";
+
+    // --- Connectivity check (logical maze connectivity using node walls) ---
+    {
+        const auto &nodes = mg.getGrid();
+        int W = mg.getWidth();
+        int H = mg.getHeight();
+        std::vector<bool> seen(nodes.size(), false);
+        std::vector<int> stackIdx;
+
+        // start from bottom-left
+        int startIdx = (H - 1) * W + 0;
+        stackIdx.push_back(startIdx);
+        seen[startIdx] = true;
+
+        while (!stackIdx.empty())
+        {
+            int idx = stackIdx.back();
+            stackIdx.pop_back();
+            Node *n = nodes[idx];
+            int x = n->getxPos();
+            int y = n->getyPos();
+
+            // top neighbor
+            if (!n->top && y - 1 >= 0)
+            {
+                int ni = (y - 1) * W + x;
+                if (!seen[ni]) { seen[ni] = true; stackIdx.push_back(ni); }
+            }
+            // bottom neighbor
+            if (!n->bottom && y + 1 < H)
+            {
+                int ni = (y + 1) * W + x;
+                if (!seen[ni]) { seen[ni] = true; stackIdx.push_back(ni); }
+            }
+            // left neighbor
+            if (!n->left && x - 1 >= 0)
+            {
+                int ni = y * W + (x - 1);
+                if (!seen[ni]) { seen[ni] = true; stackIdx.push_back(ni); }
+            }
+            // right neighbor
+            if (!n->right && x + 1 < W)
+            {
+                int ni = y * W + (x + 1);
+                if (!seen[ni]) { seen[ni] = true; stackIdx.push_back(ni); }
+            }
+        }
+
+        int reachable = 0;
+        std::vector<int> unreachable;
+        for (size_t i = 0; i < seen.size(); ++i)
+        {
+            if (seen[i]) ++reachable;
+            else unreachable.push_back(static_cast<int>(i));
+        }
+
+        if (reachable == (int)nodes.size())
+            std::cout << "Logical connectivity check: OK — all " << reachable << " nodes reachable from entry\n";
+        else
+        {
+            std::cerr << "Logical connectivity: only " << reachable << " / " << nodes.size() << " reachable from entry. Unreachable nodes:";
+            for (int ui : unreachable)
+            {
+                Node *u = nodes[ui];
+                std::cerr << " (" << u->getxPos() << "," << u->getyPos() << ")";
+            }
+            std::cerr << "\n";
+        }
+    }
 
     {
         float tileSizeX = static_cast<float>(window.getSize().x) / static_cast<float>(mg.getWidth());
@@ -222,12 +295,12 @@ int main()
 
         window.draw(backgroundSprite);
 
-        for (auto *character : allCharacters)
-            if (character->isAlive())
-                character->draw(window);
-
         for (auto &g : grounds)
             g->draw(window);
+
+            for (auto *character : allCharacters)
+            if (character->isAlive())
+                character->draw(window);
 
         dev.drawInfo(window, *player, allCharacters);
 

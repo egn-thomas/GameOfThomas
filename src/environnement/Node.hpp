@@ -1,6 +1,8 @@
 #ifndef NODE_HPP
 #define NODE_HPP
 #include <SFML/Graphics.hpp>
+#include <vector>
+#include <unordered_set>
 
 class Node
 {
@@ -12,10 +14,16 @@ private:
     bool visited = false;
 
 public:
+    bool forcedTop = false;
+    bool forcedBottom = false;
+    bool forcedLeft = false;
+    bool forcedRight = false;
+
     bool top = true;
     bool bottom = true;
     bool left = true;
     bool right = true;
+
     Node(int id, int xPos, int yPos);
     void addNeighbors(Node *n);
     bool isPositionsNeighbors(Node *n);

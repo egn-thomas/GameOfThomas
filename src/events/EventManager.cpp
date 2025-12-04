@@ -53,9 +53,34 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
         direction.x -= 1.f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
         direction.x += 1.f;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && player.isOnGround())
+    // Jump when on ground
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && player.isOnGround() && !player.isOnLadder())
     {
-        player.jump(700);
+        player.jump();
+    }
+
+    // Ladder climbing: if player overlaps a ladder, allow vertical movement using Z (up) / S (down)
+    bool verticalInput = false;
+    if (player.isOnLadder())
+    {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
+        {
+            direction.y -= 1.f;
+            verticalInput = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        {
+            direction.y += 1.f;
+            verticalInput = true;
+        }
+
+        // When vertical input on a ladder, enable climbing mode on the player so gravity is disabled
+        player.setClimbing(verticalInput);
+    }
+    else
+    {
+        // Ensure climbing mode is disabled when not on ladder
+        player.setClimbing(false);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
     {

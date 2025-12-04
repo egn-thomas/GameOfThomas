@@ -39,31 +39,50 @@ bool Node::isPositionsNeighbors(Node *n)
 /**
  * @brief retire un mur avec le node passé en paramètre.
  */
-void Node::removeWallWith(Node* other)
+void Node::removeWallWith(Node *other)
 {
-    if (xPos == other->xPos) {
-        if (yPos == other->yPos + 1) {
-            top = false;
-            other->bottom = false;
+    if (xPos == other->xPos)
+    {
+        if (yPos == other->yPos + 1)
+        {
+            if (!forcedTop && !other->forcedBottom)
+            {
+                top = false;
+                other->bottom = false;
+            }
         }
-        else if (yPos == other->yPos - 1) {
-            bottom = false;
-            other->top = false;
+        else if (yPos == other->yPos - 1)
+        {
+            if (!forcedBottom && !other->forcedTop)
+            {
+                bottom = false;
+                other->top = false;
+            }
         }
     }
-    else if (yPos == other->yPos) {
-        if (xPos == other->xPos + 1) {
-            left = false;
-            other->right = false;
+    else if (yPos == other->yPos)
+    {
+        if (xPos == other->xPos + 1)
+        {
+            if (!forcedLeft && !other->forcedRight)
+            {
+                left = false;
+                other->right = false;
+            }
         }
-        else if (xPos == other->xPos - 1) {
-            right = false;
-            other->left = false;
+        else if (xPos == other->xPos - 1)
+        {
+            if (!forcedRight && !other->forcedLeft)
+            {
+                right = false;
+                other->left = false;
+            }
         }
     }
 }
 
-bool Node::isVisited(){
+bool Node::isVisited()
+{
     return (this->visited);
 }
 

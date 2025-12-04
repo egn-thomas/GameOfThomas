@@ -3,12 +3,13 @@
 #include <memory>
 
 class Player : public GameCharacter {
-private:
+protected:
+    const float jumpStrength = 500.f;
 public:
     // constructeur
     Player(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture);
 
-    void jump(float jumpStrength);
+    void jump();
 
     // dessin éventuellement surchargé (si spécifique)
     void draw(sf::RenderWindow& window) override;

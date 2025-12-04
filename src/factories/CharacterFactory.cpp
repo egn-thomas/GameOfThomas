@@ -23,7 +23,7 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
         textureWalk->create(32, 32);
     }
 
-    auto player = std::make_unique<Player>("Player", 100, 50, 500.f, textureIdle);
+    auto player = std::make_unique<Player>("Player", 100, 50, 250.f, textureIdle);
     player->setAnimationTexture(AnimationState::Idle, textureIdle, 1, 32, 32, 1.f);
     player->setAnimationTexture(AnimationState::Walk, textureWalk, 4, 32, 32, 6.f);
     player->setPosition(windowSize.x / 2.f, windowSize.y / 2.f);

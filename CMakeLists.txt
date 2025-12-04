@@ -17,6 +17,7 @@ add_executable(main
     src/environnement/Node.cpp
     src/environnement/Ground.cpp
     src/environnement/TexturedGround.cpp
+    src/environnement/LadderGround.cpp
     src/DevMode.cpp
     src/factories/CharacterFactory.cpp
     src/factories/BlockFactory.cpp
