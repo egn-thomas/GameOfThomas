@@ -307,7 +307,7 @@ int main()
         if (isPaused)
         {
             sf::Font font;
-            if (font.loadFromFile("../src/assets/fonts/arial.ttf"))
+            if (font.loadFromFile("../src/assets/fonts/RobotoMono-Regular.ttf"))
             {
                 sf::Text pauseText("Jeu en pause", font, 80);
                 pauseText.setFillColor(sf::Color::White);

@@ -54,7 +54,7 @@ private:
     // --- Dash ---
     bool isDashing = false;
     bool canDash = true;
-    float dashSpeed = 900.f;
+    float dashSpeed = 400.f;
     float dashDuration = 0.15f;
     float dashTimer = 0.f;
     int dashDirection = 0; // -1 = gauche, +1 = droite
