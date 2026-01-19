@@ -281,7 +281,17 @@ int main()
             for (auto *character : allCharacters)
             {
                 if (character->isAlive())
-                    character->update(deltaTime, grounds);
+                {
+                    // Update behavior for non-player characters (enemies)
+                    if (NonPlayer *npc = dynamic_cast<NonPlayer *>(character))
+                    {
+                        npc->updateBehavior(deltaTime, player.get(), grounds);
+                    }
+                    else
+                    {
+                        character->update(deltaTime, grounds);
+                    }
+                }
             }
 
             allCharacters.erase(

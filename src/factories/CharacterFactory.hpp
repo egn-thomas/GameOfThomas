@@ -1,7 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "../characters/Player.hpp"
-#include "../characters/NonPlayer.hpp"
+#include "../characters/Candle.hpp"
 #include <vector>
 #include <memory>
 

@@ -11,6 +11,7 @@ add_executable(main
     src/characters/GameCharacter.cpp
     src/characters/Player.cpp
     src/characters/NonPlayer.cpp
+    src/characters/Candle.cpp
     src/events/EventManager.cpp
     src/events/MoveEvent.cpp
     src/environnement/ModelGenerator.cpp

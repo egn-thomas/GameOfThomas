@@ -16,3 +16,13 @@ void NonPlayer::draw(sf::RenderWindow &window)
 {
     GameCharacter::draw(window);
 }
+
+/**
+ * @brief Comportement IA par défaut (à surcharger dans les classes dérivées)
+ * Par défaut, le PNJ ne fait rien.
+ */
+void NonPlayer::updateBehavior(float deltaTime, Player* player, const std::vector<std::unique_ptr<Ground>>& grounds)
+{
+    // Implémentation par défaut : ne rien faire
+    // Les classes dérivées peuvent surcharger cette méthode
+}

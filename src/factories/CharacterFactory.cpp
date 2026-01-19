@@ -33,11 +33,11 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
 }
 
 /**
- * @brief Crée une liste de personnages non-joueurs (PNJ) avec des paramètres prédéfinis.
+ * @brief Crée une liste de chandelles (ennemis IA) avec des paramètres prédéfinis.
  *
- * @param windowSize La taille de la fenêtre pour positionner les PNJ.
- * @param offset Un décalage à appliquer à la position des PNJ.
- * @return std::vector<std::unique_ptr<NonPlayer>> Vecteur de pointeurs uniques vers les PNJ créés.
+ * @param windowSize La taille de la fenêtre pour positionner les ennemis.
+ * @param offset Un décalage à appliquer à la position des ennemis.
+ * @return std::vector<std::unique_ptr<NonPlayer>> Vecteur de pointeurs uniques vers les ennemis créés.
  */
 std::vector<std::unique_ptr<NonPlayer>> CharacterFactory::createNonPlayer(
     const sf::Vector2u &windowSize,
@@ -51,19 +51,19 @@ std::vector<std::unique_ptr<NonPlayer>> CharacterFactory::createNonPlayer(
         pnjTexture->create(32, 32);
     }
 
-    // PNJ 1
-    auto pnj1 = std::make_unique<NonPlayer>("Enemy1", 50, 10, 450.f, pnjTexture);
-    pnj1->setPosition(windowSize.x / 3.f, windowSize.y / 2.f);
-    pnj1->setAnimationParams(4, 32, 32, 6.f);
-    pnj1->setHitbox(0.f, 0.f, 32.f, 32.f);
-    npcs.push_back(std::move(pnj1));
+    // Candle 1
+    auto candle1 = std::make_unique<Candle>("Candle1", 50, 10, 150.f, pnjTexture);
+    candle1->setPosition(windowSize.x / 3.f, windowSize.y / 2.f);
+    candle1->setAnimationParams(4, 32, 32, 6.f);
+    candle1->setHitbox(0.f, 0.f, 32.f, 32.f);
+    npcs.push_back(std::move(candle1));
 
-    // PNJ 2
-    auto pnj2 = std::make_unique<NonPlayer>("Enemy2", 60, 15, 420.f, pnjTexture);
-    pnj2->setPosition(windowSize.x / 2.f, windowSize.y / 1.8f);
-    pnj2->setAnimationParams(4, 32, 32, 6.f);
-    pnj2->setHitbox(0.f, 0.f, 32.f, 32.f);
-    npcs.push_back(std::move(pnj2));
+    // Candle 2
+    auto candle2 = std::make_unique<Candle>("Candle2", 60, 15, 150.f, pnjTexture);
+    candle2->setPosition(windowSize.x / 2.f, windowSize.y / 1.8f);
+    candle2->setAnimationParams(4, 32, 32, 6.f);
+    candle2->setHitbox(0.f, 0.f, 32.f, 32.f);
+    npcs.push_back(std::move(candle2));
 
     return npcs;
 }
