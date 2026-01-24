@@ -14,6 +14,7 @@ add_executable(main
     src/characters/Candle.cpp
     src/events/EventManager.cpp
     src/events/MoveEvent.cpp
+    src/ui/PauseMenu.cpp
     src/environnement/ModelGenerator.cpp
     src/environnement/Node.cpp
     src/environnement/Ground.cpp

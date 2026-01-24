@@ -25,9 +25,16 @@ void EventManager::processEvents(Player &player, std::vector<GameCharacter *> al
     {
         if (event.type == sf::Event::Closed)
             window.close();
+        
+        // Note: Échap est maintenant détecté dans main.cpp avant que les événements
+        // n'arrivent à EventManager, car les événements sont consommés par window.pollEvent()
     }
 
-    handleKeyboard(player, 1.f / 60.f, allCharacters);
+    // Ne traiter les événements du jeu que si pas en pause
+    if (!paused)
+    {
+        handleKeyboard(player, 1.f / 60.f, allCharacters);
+    }
 
     // Exécute tous les événements
     for (auto &ev : eventQueue)

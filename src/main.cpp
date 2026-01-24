@@ -9,6 +9,7 @@
 
 #include "factories/CharacterFactory.hpp"
 #include "events/EventManager.hpp"
+#include "ui/PauseMenu.hpp"
 #include "DevMode.hpp"
 
 #include "./blocks/Block.hpp"
@@ -265,7 +266,9 @@ int main()
     EventManager eventManager(window);
     DevMode dev(true);
     sf::Clock clock;
-
+    
+    PauseMenu pauseMenu;
+    bool showPauseMenu = false;
     bool isPaused = false;
 
     //---------------------------------
@@ -286,12 +289,61 @@ int main()
 
             if (event.type == sf::Event::GainedFocus)
                 isPaused = false;
+            
+            // Détection d'Échap pour la pause (car les événements sont consommés ici)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+            {
+                eventManager.setPaused(!eventManager.isPaused());
+                std::cout << "[DEBUG MAIN] Échap détecté! paused = " << eventManager.isPaused() << std::endl;
+            }
+                
+            // Gestion du menu de pause
+            if (showPauseMenu)
+            {
+                if (event.type == sf::Event::KeyPressed)
+                {
+                    if (event.key.code == sf::Keyboard::Up)
+                        pauseMenu.moveSelection(-1);
+                    else if (event.key.code == sf::Keyboard::Down)
+                        pauseMenu.moveSelection(1);
+                    else if (event.key.code == sf::Keyboard::Return)
+                    {
+                        if (pauseMenu.getSelectedOption() == PauseMenu::MenuOption::Continue)
+                        {
+                            showPauseMenu = false;
+                            eventManager.setPaused(false);
+                        }
+                        else if (pauseMenu.getSelectedOption() == PauseMenu::MenuOption::Quit)
+                        {
+                            window.close();
+                        }
+                    }
+                }
+            }
         }
 
-        if (!isPaused)
+        // Synchroniser l'état de pause avec EventManager
+        if (eventManager.isPaused())
         {
-            eventManager.processEvents(*player, allCharacters);
+            if (!showPauseMenu)
+            {
+                std::cout << "[DEBUG MAIN] Mise en pause, affichage du menu" << std::endl;
+                showPauseMenu = true;
+                pauseMenu.resetSelection();
+            }
+        }
+        else
+        {
+            if (showPauseMenu)
+                std::cout << "[DEBUG MAIN] Reprise du jeu, masquage du menu" << std::endl;
+            showPauseMenu = false;
+        }
 
+        // Toujours appeler processEvents pour détecter Échap et les inputs du menu
+        eventManager.processEvents(*player, allCharacters);
+
+        if (!isPaused && !showPauseMenu)
+        {
             // Update
             for (auto *character : allCharacters)
             {
@@ -355,19 +407,22 @@ int main()
 
         dev.drawInfo(window, *player, allCharacters);
 
-        if (isPaused)
+        // Afficher le menu de pause si actif
+        if (showPauseMenu)
         {
-            sf::Font font;
-            if (font.loadFromFile("../src/assets/fonts/RobotoMono-Regular.ttf"))
-            {
-                sf::Text pauseText("Jeu en pause", font, 80);
-                pauseText.setFillColor(sf::Color::White);
-                pauseText.setOutlineColor(sf::Color::Black);
-                pauseText.setOutlineThickness(3);
-                pauseText.setPosition(window.getSize().x / 2.f - pauseText.getGlobalBounds().width / 2.f,
-                                      window.getSize().y / 2.f - pauseText.getGlobalBounds().height / 2.f);
-                window.draw(pauseText);
-            }
+            std::cout << "[DEBUG MAIN] Dessin du menu de pause" << std::endl;
+            
+            // Sauvegarder la vue actuelle (vue du jeu zoomée)
+            sf::View currentView = window.getView();
+            
+            // Appliquer la vue par défaut de la fenêtre pour le menu
+            window.setView(window.getDefaultView());
+            
+            // Dessiner le menu de pause
+            pauseMenu.draw(window);
+            
+            // Restaurer la vue du jeu
+            window.setView(currentView);
         }
 
         window.display();
