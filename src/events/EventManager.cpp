@@ -49,6 +49,7 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
 {
     sf::Vector2f direction(0.f, 0.f);
 
+    // Déplacemnts Standard
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
         direction.x -= 1.f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
@@ -73,7 +74,6 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
             direction.y += 1.f;
             verticalInput = true;
         }
-
         // When vertical input on a ladder, enable climbing mode on the player so gravity is disabled
         player.setClimbing(verticalInput);
     }
@@ -82,6 +82,8 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
         // Ensure climbing mode is disabled when not on ladder
         player.setClimbing(false);
     }
+    
+    // Attaque a droite ou a gauche
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
     {
         player.attack(Direction::Right, allCharacters);
@@ -90,6 +92,7 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
     {
         player.attack(Direction::Left, allCharacters);
     }
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && player.isCanDash())
     {
         int dir = 0;

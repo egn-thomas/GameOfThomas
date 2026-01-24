@@ -1,4 +1,5 @@
 #include "Node.hpp"
+#include <iostream>
 
 /**
  * @brief Constructeur d'un Node
@@ -94,4 +95,50 @@ void Node::setVisited(bool a)
 std::vector<Node *> Node::getNeighbors()
 {
     return (this->neighbors);
+}
+
+/**
+ * @brief Traite l'ajout d'un objet dans le noeud. Choisis si le node peur accepter l'objet. Et gère les probabilités d'apparition.
+ * @note Pour l'instant cette fonction ne permet d'ajouter que des Chest. qui est la seule classe dérivée de Object pour l'instant.
+ */
+void Node::processAddingObject()
+{
+    if (this->top == false || this->bottom == false)
+    {
+        // Ne pas ajouter d'objet si le node a des ouvertures en haut ou en bas
+        return;
+    } else {
+        // 20% de chance d'ajouter un coffre
+        int chance = std::rand() % 100;
+        if (chance < 20)
+        {
+            // Créer et ajouter un coffre à la position du node
+            // Une tuile fait 128 pixels (32 pixels * 4x échelle)
+            // Le coffre fait 32x32 pixels mis à l'échelle 4x = 128x128 pixels
+            float tileWidth = 128.f;
+            float tileHeight = 128.f;
+            float chestWidth = 32.f * 4.f;  // 128 pixels
+            float chestHeight = 32.f * 4.f; // 128 pixels
+            
+            // Centrer horizontalement et coller au sol
+            float posX = xPos * tileWidth + (tileWidth - chestWidth) / 2.f;
+            float posY = yPos * tileHeight + (tileHeight - chestHeight);
+            
+            sf::Vector2f objPosition(posX, posY);
+            std::shared_ptr<sf::Texture> chestTexture = std::make_shared<sf::Texture>();
+            if (!chestTexture->loadFromFile("../src/assets/images/chest.png"))
+            {
+                std::cerr << "Failed to load chest texture!" << std::endl;
+                return;
+            }
+            Object chest("Chest", objPosition, chestTexture);
+            this->addObject(chest);
+            std::cout << "Chest created at Node (" << xPos << ", " << yPos << ") at position (" << posX << ", " << posY << ")" << std::endl;
+        }
+    }
+}
+
+void Node::addObject(const Object &obj)
+{
+    objectsInNode.push_back(obj);
 }

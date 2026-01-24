@@ -62,7 +62,7 @@ void Candle::updateBehavior(float deltaTime, Player* player, const std::vector<s
         if (distance <= attackRange)
         {
             // Logique d'attaque à implémenter plus tard
-            std::cout << "Candle en portée d'attaque!" << std::endl;
+            // std::cout << "Candle en portée d'attaque!" << std::endl;
         }
     }
     else

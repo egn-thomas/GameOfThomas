@@ -9,7 +9,9 @@
 enum class AnimationState
 {
     Idle,
-    Walk
+    WalkRight,
+    WalkLeft,
+    Attack
 };
 
 class GameCharacter
@@ -115,6 +117,7 @@ public:
 
     void selfAnimator(float deltaTime);
     void walkAnimator(float deltaTime);
+    void attackAnimator(float deltaTime, Direction direction);
     void setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps);
     void setAnimationState(AnimationState newState);
     virtual void draw(sf::RenderWindow &window);

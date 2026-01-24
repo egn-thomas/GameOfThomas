@@ -327,10 +327,12 @@ void GameCharacter::walkAnimator(float deltaTime)
     if (std::abs(deltaX) > moveThreshold)
     {
         stillTimer = 0.f;
-        setAnimationState(AnimationState::Walk);
-
         // Déterminer l’orientation
         facingLeft = (deltaX < 0.f);
+        if (facingLeft)
+            setAnimationState(AnimationState::WalkLeft);
+        else
+            setAnimationState(AnimationState::WalkRight);
     }
     else
     {
@@ -341,9 +343,25 @@ void GameCharacter::walkAnimator(float deltaTime)
 }
 
 /**
+ * @brief Choisis la bonne animation d'attaque en fonction de la direction sur l'axe "x" du personnage concerné
+ * @param deltaTime Delta-time de la boucle update
+ * @param direction Direction de l'attaque (-1 = gauche, +1 = droite)
+ */
+void GameCharacter::attackAnimator(float deltaTime, Direction direction)
+{
+    // Déterminer l’orientation
+    facingLeft = (direction == Direction::Left);
+    //Si facingLeft est vrai on retourne l'animation sur l'axe vertical
+    if (facingLeft)
+        setAnimationState(AnimationState::Attack);
+    else
+        setAnimationState(AnimationState::Attack);
+}
+
+/**
  * @brief Définit la texture d'animation pour un état donné.
  *
- * @param state L'état d'animation (Idle, Walk, etc.)
+ * @param state L'état d'animation (Idle, WalkLeft, WalkRight, etc.)
  * @param texture La texture associée à cet état
  */
 void GameCharacter::setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps)
@@ -420,6 +438,8 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets)
         return;
     const float attackRange = 100.f;               // pixels
     const float attackHeight = getBounds().height; // même hauteur que le personnage
+
+    attackAnimator(0.f, dir);
 
     // Créer une hitbox pour l'attaque
     sf::FloatRect attackBox;

@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <unordered_set>
+#include "../objects/Object.hpp"
 
 class Node
 {
@@ -24,6 +25,8 @@ public:
     bool left = true;
     bool right = true;
 
+    std::vector<Object> objectsInNode;
+
     Node(int id, int xPos, int yPos);
     void addNeighbors(Node *n);
     bool isPositionsNeighbors(Node *n);
@@ -33,5 +36,7 @@ public:
     void removeWallWith(Node *other);
     bool isVisited();
     void setVisited(bool a);
+    void processAddingObject();
+    void addObject(const Object &obj);
 };
 #endif

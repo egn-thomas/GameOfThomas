@@ -3,6 +3,10 @@
 #include <SFML/Graphics.hpp>
 #include "Node.hpp" 
 
+/**
+ * @brief Classe pour générer un modèle de labyrinthe
+ * Utilise une grille de nœuds pour créer des chemins
+ */
 class ModelGenerator
 {
 protected:

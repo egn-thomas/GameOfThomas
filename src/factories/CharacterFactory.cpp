@@ -16,16 +16,31 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
         // create a small empty texture as a safe fallback so the game can run without assets
         textureIdle->create(32, 32);
     }
-    auto textureWalk = std::make_shared<sf::Texture>();
-    if (!textureWalk->loadFromFile("../src/assets/images/playerWalkAnimation.png"))
+    auto textureWalkRight = std::make_shared<sf::Texture>();
+    auto textureWalkLeft = std::make_shared<sf::Texture>();
+    auto textureAttack = std::make_shared<sf::Texture>();
+
+    if (!textureAttack->loadFromFile("../src/assets/images/playerAttackAnimation.png"))
+    {
+        std::cerr << "Failed to load player attack texture! Using empty fallback texture." << std::endl;
+        textureAttack->create(32, 32);
+    }
+    if (!textureWalkLeft->loadFromFile("../src/assets/images/playerRunAnimationLeft.png"))
     {
         std::cerr << "Failed to load player walk texture! Using empty fallback texture." << std::endl;
-        textureWalk->create(32, 32);
+        textureWalkLeft->create(32, 32);
+    }
+    if (!textureWalkRight->loadFromFile("../src/assets/images/playerRunAnimationRight.png"))
+    {
+        std::cerr << "Failed to load player walk texture! Using empty fallback texture." << std::endl;
+        textureWalkRight->create(32, 32);
     }
 
     auto player = std::make_unique<Player>("Player", 100, 50, 250.f, textureIdle);
     player->setAnimationTexture(AnimationState::Idle, textureIdle, 1, 32, 32, 1.f);
-    player->setAnimationTexture(AnimationState::Walk, textureWalk, 4, 32, 32, 6.f);
+    player->setAnimationTexture(AnimationState::WalkRight, textureWalkRight, 4, 32, 32, 6.f);
+    player->setAnimationTexture(AnimationState::WalkLeft, textureWalkLeft, 4, 32, 32, 6.f);
+    player->setAnimationTexture(AnimationState::Attack, textureAttack, 5, 32, 32, 10.f);
     player->setPosition(windowSize.x / 2.f, windowSize.y / 2.f);
     player->setHitbox(5.f, 7.f, 17.f, 25.f);
 

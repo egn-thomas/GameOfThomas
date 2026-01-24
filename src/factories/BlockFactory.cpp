@@ -47,7 +47,7 @@ std::unique_ptr<Block> BlockFactory::createBlocks(BlockType type, int posx, int 
 
     case LEFT_TOP_RIGHT_BOTTOM_EXIT:
         return std::make_unique<LeftTopRightBottomExitBlock>(posx, posy, window);
-
+        
     default:
         std::cerr << "  -> unknown BlockType, fallback to LeftExitBlock\n";
         // Fallback: return a simple LeftExitBlock to avoid throwing in this factory

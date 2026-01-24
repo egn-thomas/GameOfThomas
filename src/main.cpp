@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <random>
 
 #include "factories/CharacterFactory.hpp"
 #include "events/EventManager.hpp"
@@ -43,8 +44,8 @@ int main()
     sf::Vector2u windowSize = window.getSize();
     sf::Vector2u textureSize = backgroundTexture.getSize();
 
-    float scaleX = float(windowSize.x) / textureSize.x;
-    float scaleY = float(windowSize.y) / textureSize.y;
+    float scaleX = float(windowSize.x) / textureSize.x * 2.f;
+    float scaleY = float(windowSize.y) / textureSize.y * 2.f;
 
     backgroundSprite.setScale(scaleX, scaleY);
 
@@ -57,7 +58,7 @@ int main()
     std::vector<std::unique_ptr<Block>> blocks;
     std::vector<std::unique_ptr<Ground>> grounds;
 
-    ModelGenerator mg(7, 4);
+    ModelGenerator mg(14, 8);
     for (Node *n : mg.getGrid())
     {
         BlockType t = getBlockTypeFromNode(n);
@@ -72,6 +73,9 @@ int main()
         std::cout << "  -> Block created " << created.size() << " grounds" << std::endl;
         for (auto &g : created)
             grounds.push_back(std::move(g));
+
+        // Traiter l'ajout d'objets au node
+        n->processAddingObject();
     }
 
     int mismatches = 0;
@@ -240,6 +244,17 @@ int main()
     }
 
     //---------------------------------
+    // Configuration de la caméra
+    //---------------------------------
+    // Taille de la vue : environ 3 cases de largeur
+    // Une case fait 128 pixels (32 pixels de sprite * 4x échelle)
+    float cameraWidth = 6.f * 128.f; 
+    float cameraHeight = cameraWidth * (window.getSize().y / static_cast<float>(window.getSize().x));
+    
+    sf::View gameView(sf::Vector2f(0.f, 0.f), sf::Vector2f(cameraWidth, cameraHeight));
+    window.setView(gameView);
+
+    //---------------------------------
     // Liste globale des personnages
     //---------------------------------
     std::vector<GameCharacter *> allCharacters;
@@ -299,6 +314,10 @@ int main()
                                [](GameCharacter *c)
                                { return !c->isAlive() && dynamic_cast<NonPlayer *>(c); }),
                 allCharacters.end());
+            
+            // Update camera to follow player
+            gameView.setCenter(player->getPosition());
+            window.setView(gameView);
         }
 
         window.clear();
@@ -307,6 +326,15 @@ int main()
 
         for (auto &g : grounds)
             g->draw(window);
+
+        // Afficher les objets contenus dans chaque node
+        for (Node *n : mg.getGrid())
+        {
+            for (auto &obj : n->objectsInNode)
+            {
+                obj.draw(window);
+            }
+        }
 
             for (auto *character : allCharacters)
             if (character->isAlive())
@@ -334,102 +362,4 @@ int main()
 
     return 0;
 }
-
-// #include <SFML/Graphics.hpp>
-// #include "./environnement/ModelGenerator.hpp"
-// #include "./environnement/Node.hpp"
-// #include <vector>
-// #include <iostream>
-
-// void drawMazeSFML(const std::vector<Node *> &grid, int width, int height, int cellSize)
-// {
-//     sf::RenderWindow window(sf::VideoMode(width * cellSize, height * cellSize), "Maze Debug");
-
-//     while (window.isOpen())
-//     {
-//         sf::Event event;
-//         while (window.pollEvent(event))
-//             if (event.type == sf::Event::Closed)
-//                 window.close();
-
-//         window.clear(sf::Color::Black);
-
-//         sf::RectangleShape line;
-//         line.setFillColor(sf::Color::White);
-
-//         for (Node *n : grid)
-//         {
-//             int px = n->getxPos() * cellSize;
-//             int py = n->getyPos() * cellSize;
-
-//             if (n->top)
-//             {
-//                 line.setSize(sf::Vector2f(cellSize, 2));
-//                 line.setPosition(px, py);
-//                 window.draw(line);
-//             }
-//             if (n->bottom)
-//             {
-//                 line.setSize(sf::Vector2f(cellSize, 2));
-//                 line.setPosition(px, py + cellSize);
-//                 window.draw(line);
-//             }
-//             if (n->left)
-//             {
-//                 line.setSize(sf::Vector2f(2, cellSize));
-//                 line.setPosition(px, py);
-//                 window.draw(line);
-//             }
-//             if (n->right)
-//             {
-//                 line.setSize(sf::Vector2f(2, cellSize));
-//                 line.setPosition(px + cellSize, py);
-//                 window.draw(line);
-//             }
-//         }
-
-//         window.display();
-//     }
-// }
-
-// int main()
-// {
-//     int width = 7;
-//     int height = 4;
-//     int cellSize = 50;
-
-//     // Génération du labyrinthe
-//     ModelGenerator mg(width, height);
-
-//     // Debug : taille de la grille
-//     std::cout << "Width=" << mg.getWidth()
-//               << ", Height=" << mg.getHeight()
-//               << ", Grid size=" << mg.getGrid().size() << std::endl;
-
-//     // Debug : contenu de chaque node
-//     for (Node *n : mg.getGrid())
-//     {
-//         std::cout << "Node x=" << n->getxPos()
-//                   << " y=" << n->getyPos()
-//                   << " top=" << n->top
-//                   << " bottom=" << n->bottom
-//                   << " left=" << n->left
-//                   << " right=" << n->right
-//                   << std::endl;
-//     }
-
-//     // Debug rapide : si la grille semble vide, enlever quelques murs
-//     if (mg.getGrid().size() == 0)
-//     {
-//         std::cerr << "Warning : Grid is empty, forcing some walls for debug." << std::endl;
-//         for (Node *n : mg.getGrid())
-//         {
-//             n->top = false;
-//             n->left = false;
-//         }
-//     }
-
-//     drawMazeSFML(mg.getGrid(), width, height, cellSize);
-// }
-
-#endif // GAME_OF_THOMAS_MAIN_HPP
+#endif
