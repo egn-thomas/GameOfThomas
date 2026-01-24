@@ -247,8 +247,8 @@ int main()
     // Configuration de la caméra
     //---------------------------------
     // Taille de la vue : environ 3 cases de largeur
-    // Une case fait 128 pixels (32 pixels de sprite * 4x échelle)
-    float cameraWidth = 6.f * 128.f; 
+    // Une case fait 256 pixels (64 pixels de sprite * 4x échelle)
+    float cameraWidth = 3.f * 256.f; 
     float cameraHeight = cameraWidth * (window.getSize().y / static_cast<float>(window.getSize().x));
     
     sf::View gameView(sf::Vector2f(0.f, 0.f), sf::Vector2f(cameraWidth, cameraHeight));
@@ -315,9 +315,22 @@ int main()
                                { return !c->isAlive() && dynamic_cast<NonPlayer *>(c); }),
                 allCharacters.end());
             
-            // Update camera to follow player
-            gameView.setCenter(player->getPosition());
-            window.setView(gameView);
+            // Update camera to follow player or show full map
+            if (eventManager.isMapViewActive())
+            {
+                // Vue de la carte complète
+                // Calcul du centre et de la taille pour voir la map entière
+                float mapWidth = 14.f * 256.f;  // 14 cases de 128 pixels
+                float mapHeight = 8.f * 256.f;   // 8 cases de 128 pixels
+                sf::View mapView(sf::Vector2f(mapWidth / 2.f, mapHeight / 2.f), sf::Vector2f(mapWidth, mapHeight));
+                window.setView(mapView);
+            }
+            else
+            {
+                // Vue du joueur
+                gameView.setCenter(player->getPosition());
+                window.setView(gameView);
+            }
         }
 
         window.clear();

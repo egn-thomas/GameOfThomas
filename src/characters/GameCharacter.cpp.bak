@@ -289,12 +289,6 @@ void GameCharacter::selfAnimator(float deltaTime)
         {
             timer = 0.f;
             currentFrame = (currentFrame + 1) % frameCount;
-
-            // Si animation d'attaque terminée, revenir à Idle
-            if (currentState == AnimationState::Attack && currentFrame == 0)
-            {
-                setAnimationState(AnimationState::Idle);
-            }
         }
 
         // Calculer l’IntRect final
@@ -327,10 +321,6 @@ void GameCharacter::selfAnimator(float deltaTime)
  */
 void GameCharacter::walkAnimator(float deltaTime)
 {
-    // Ne pas modifier l'animation si on est en train d'attaquer
-    if (currentState == AnimationState::Attack)
-        return;
-
     float deltaX = position.x - previousPosition.x;
     const float moveThreshold = 1.0f;
 

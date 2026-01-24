@@ -93,6 +93,21 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
         player.attack(Direction::Left, allCharacters);
     }
 
+    // Vue de la carte (M pour map)
+    static bool mKeyPressed = false;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::M))
+    {
+        if (!mKeyPressed)
+        {
+            toggleMapView();
+            mKeyPressed = true;
+        }
+    }
+    else
+    {
+        mKeyPressed = false;
+    }
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && player.isCanDash())
     {
         int dir = 0;

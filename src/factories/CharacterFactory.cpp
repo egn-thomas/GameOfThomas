@@ -70,14 +70,14 @@ std::vector<std::unique_ptr<NonPlayer>> CharacterFactory::createNonPlayer(
     auto candle1 = std::make_unique<Candle>("Candle1", 50, 10, 150.f, pnjTexture);
     candle1->setPosition(windowSize.x / 3.f, windowSize.y / 2.f);
     candle1->setAnimationParams(4, 32, 32, 6.f);
-    candle1->setHitbox(0.f, 0.f, 32.f, 32.f);
+    candle1->setHitbox(3.f, 0.f, 26.f, 32.f);
     npcs.push_back(std::move(candle1));
 
     // Candle 2
     auto candle2 = std::make_unique<Candle>("Candle2", 60, 15, 150.f, pnjTexture);
     candle2->setPosition(windowSize.x / 2.f, windowSize.y / 1.8f);
     candle2->setAnimationParams(4, 32, 32, 6.f);
-    candle2->setHitbox(0.f, 0.f, 32.f, 32.f);
+    candle2->setHitbox(3.f, 0.f, 26.f, 32.f);
     npcs.push_back(std::move(candle2));
 
     return npcs;

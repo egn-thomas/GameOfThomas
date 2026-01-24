@@ -9,6 +9,8 @@
 Candle::Candle(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture)
     : NonPlayer(name, hp, mana, speed, texture)
 {
+    // Réduire la taille de 20% par rapport au scale par défaut (4.0 -> 3.2)
+    sprite.setScale(3.2f, 3.2f);
 }
 
 /**
