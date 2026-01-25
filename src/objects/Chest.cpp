@@ -6,6 +6,9 @@
 Chest::Chest(const sf::Vector2f &position, std::shared_ptr<sf::Texture> texture)
     : Object("Chest", position, texture), closedTexture(texture)
 {
+    // Scaling par défaut (4x comme les autres éléments du jeu)
+    sprite.setScale(4.f, 4.f);
+    
     // Charger la texture du coffre ouvert
     openedTexture = std::make_shared<sf::Texture>();
     if (!openedTexture->loadFromFile("../src/assets/images/chestOpened.png"))

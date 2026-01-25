@@ -18,7 +18,53 @@
 #include "./environnement/ModelGenerator.hpp"
 #include "./environnement/Node.hpp"
 #include "./objects/Chest.hpp"
+#include "./objects/Door.hpp"
 #include <iostream>
+
+/**
+ * @brief Structure pour encapsuler les données du niveau
+ */
+struct GameLevel
+{
+    std::vector<std::unique_ptr<Block>> blocks;
+    std::vector<std::unique_ptr<Ground>> grounds;
+    std::vector<std::unique_ptr<Object>> gameObjects;
+    std::vector<std::unique_ptr<GameCharacter>> spawnedCharacters;
+    std::unique_ptr<ModelGenerator> mazeGenerator;
+};
+
+/**
+ * @brief Génère un nouveau niveau
+ * @param window La fenêtre de rendu
+ * @return GameLevel Les données du nouveau niveau
+ */
+GameLevel generateNewLevel(sf::RenderWindow& window)
+{
+    GameLevel level;
+    
+    level.mazeGenerator = std::make_unique<ModelGenerator>(14, 8);
+    
+    for (Node *n : level.mazeGenerator->getGrid())
+    {
+        BlockType t = getBlockTypeFromNode(n);
+        std::unique_ptr<Block> tile = BlockFactory::createBlocks(t, n->getxPos(), n->getyPos(), window);
+        level.blocks.push_back(std::move(tile));
+
+        auto created = level.blocks.back()->createGrounds();
+        for (auto &g : created)
+            level.grounds.push_back(std::move(g));
+
+        auto objects = level.blocks.back()->createObjects();
+        for (auto &obj : objects)
+            level.gameObjects.push_back(std::move(obj));
+
+        auto characters = level.blocks.back()->createCharacters();
+        for (auto &character : characters)
+            level.spawnedCharacters.push_back(std::move(character));
+    }
+    
+    return level;
+}
 
 int main()
 {
@@ -66,48 +112,19 @@ int main()
     auto player = CharacterFactory::createPlayer(window.getSize());
     auto npcs = CharacterFactory::createNonPlayer(window.getSize(), {2.5f, 2.f});
 
-    std::vector<std::unique_ptr<Block>> blocks;
-    std::vector<std::unique_ptr<Ground>> grounds;
-    std::vector<std::unique_ptr<Object>> gameObjects;
-    std::vector<std::unique_ptr<GameCharacter>> spawnedCharacters;
-
-    ModelGenerator mg(14, 8);
-    for (Node *n : mg.getGrid())
-    {
-        BlockType t = getBlockTypeFromNode(n);
-
-        std::cout << "Node pos=(" << n->getxPos() << "," << n->getyPos() << ") walls:[top=" << n->top << ",bot=" << n->bottom << ",left=" << n->left << ",right=" << n->right << "] -> BlockType=" << static_cast<int>(t) << std::endl;
-
-        std::unique_ptr<Block> tile = BlockFactory::createBlocks(t, n->getxPos(), n->getyPos(), window);
-
-        blocks.push_back(std::move(tile));
-
-        auto created = blocks.back()->createGrounds();
-        std::cout << "  -> Block created " << created.size() << " grounds" << std::endl;
-        for (auto &g : created)
-            grounds.push_back(std::move(g));
-
-        // Créer les objets du bloc (coffres, etc.)
-        auto objects = blocks.back()->createObjects();
-        for (auto &obj : objects)
-            gameObjects.push_back(std::move(obj));
-
-        // Créer les mobs du bloc
-        auto characters = blocks.back()->createCharacters();
-        for (auto &character : characters)
-            spawnedCharacters.push_back(std::move(character));
-    }
+    // Générer le premier niveau
+    GameLevel currentLevel = generateNewLevel(window);
 
     int mismatches = 0;
-    const auto &gridRef = mg.getGrid();
+    const auto &gridRef = currentLevel.mazeGenerator->getGrid();
     for (Node *n : gridRef)
     {
         int x = n->getxPos();
         int y = n->getyPos();
 
-        if (x + 1 < mg.getWidth())
+        if (x + 1 < currentLevel.mazeGenerator->getWidth())
         {
-            Node *r = gridRef[y * mg.getWidth() + (x + 1)];
+            Node *r = gridRef[y * currentLevel.mazeGenerator->getWidth() + (x + 1)];
             if (n->right != r->left)
             {
                 std::cerr << "Symmetry mismatch: (" << x << "," << y << ") right=" << n->right
@@ -116,9 +133,9 @@ int main()
             }
         }
 
-        if (y + 1 < mg.getHeight())
+        if (y + 1 < currentLevel.mazeGenerator->getHeight())
         {
-            Node *b = gridRef[(y + 1) * mg.getWidth() + x];
+            Node *b = gridRef[(y + 1) * currentLevel.mazeGenerator->getWidth() + x];
             if (n->bottom != b->top)
             {
                 std::cerr << "Symmetry mismatch: (" << x << "," << y << ") bottom=" << n->bottom
@@ -135,9 +152,9 @@ int main()
 
     // --- Connectivity check (logical maze connectivity using node walls) ---
     {
-        const auto &nodes = mg.getGrid();
-        int W = mg.getWidth();
-        int H = mg.getHeight();
+        const auto &nodes = currentLevel.mazeGenerator->getGrid();
+        int W = currentLevel.mazeGenerator->getWidth();
+        int H = currentLevel.mazeGenerator->getHeight();
         std::vector<bool> seen(nodes.size(), false);
         std::vector<int> stackIdx;
 
@@ -203,14 +220,14 @@ int main()
     }
 
     {
-        float tileSizeX = static_cast<float>(window.getSize().x) / static_cast<float>(mg.getWidth());
-        float tileSizeY = static_cast<float>(window.getSize().y) / static_cast<float>(mg.getHeight());
+        float tileSizeX = static_cast<float>(window.getSize().x) / static_cast<float>(currentLevel.mazeGenerator->getWidth());
+        float tileSizeY = static_cast<float>(window.getSize().y) / static_cast<float>(currentLevel.mazeGenerator->getHeight());
         const float probeThickness = 6.f;
 
         auto isBlockedBetween = [&](float px, float py, float w, float h)
         {
             sf::FloatRect probe(px, py, w, h);
-            for (const auto &g : grounds)
+            for (const auto &g : currentLevel.grounds)
             {
                 if (g->getBounds().intersects(probe))
                     return true;
@@ -219,14 +236,14 @@ int main()
         };
 
         int blockedCount = 0;
-        for (Node *n : mg.getGrid())
+        for (Node *n : currentLevel.mazeGenerator->getGrid())
         {
             int x = n->getxPos();
             int y = n->getyPos();
 
-            if (x + 1 < mg.getWidth())
+            if (x + 1 < currentLevel.mazeGenerator->getWidth())
             {
-                Node *r = mg.getGrid()[y * mg.getWidth() + (x + 1)];
+                Node *r = currentLevel.mazeGenerator->getGrid()[y * currentLevel.mazeGenerator->getWidth() + (x + 1)];
                 if (!n->right && !r->left)
                 {
                     float edgeX = (x + 1) * tileSizeX;
@@ -240,9 +257,9 @@ int main()
                 }
             }
 
-            if (y + 1 < mg.getHeight())
+            if (y + 1 < currentLevel.mazeGenerator->getHeight())
             {
-                Node *b = mg.getGrid()[(y + 1) * mg.getWidth() + x];
+                Node *b = currentLevel.mazeGenerator->getGrid()[(y + 1) * currentLevel.mazeGenerator->getWidth() + x];
                 if (!n->bottom && !b->top)
                 {
                     float edgeX = x * tileSizeX + tileSizeX * 0.1f;
@@ -279,9 +296,7 @@ int main()
     //---------------------------------
     std::vector<GameCharacter *> allCharacters;
     allCharacters.push_back(player.get());
-    for (auto &npc : npcs)
-        allCharacters.push_back(npc.get());
-    for (auto &character : spawnedCharacters)
+    for (auto &character : currentLevel.spawnedCharacters)
         allCharacters.push_back(character.get());
 
     EventManager eventManager(window);
@@ -292,8 +307,9 @@ int main()
     bool showPauseMenu = false;
     bool isPaused = false;
 
-    // Variables pour la gestion des coffres
+    // Variables pour la gestion des coffres et portes
     Chest* currentChestNearby = nullptr;
+    Door* currentDoorNearby = nullptr;
 
     //---------------------------------
     // Boucle principale
@@ -369,7 +385,7 @@ int main()
         // Détection des coffres proches du joueur
         currentChestNearby = nullptr;
         sf::FloatRect playerBounds = player->getBounds();
-        for (auto &chest : gameObjects)
+        for (auto &chest : currentLevel.gameObjects)
         {
             if (Chest *c = dynamic_cast<Chest *>(chest.get()))
             {
@@ -387,6 +403,37 @@ int main()
             currentChestNearby->open();
         }
 
+        // Détection des portes proches du joueur
+        currentDoorNearby = nullptr;
+        for (auto &obj : currentLevel.gameObjects)
+        {
+            if (Door *d = dynamic_cast<Door *>(obj.get()))
+            {
+                if (d->isPlayerOnDoor(playerBounds))
+                {
+                    currentDoorNearby = d;
+                    break;
+                }
+            }
+        }
+
+        // Transitionner vers le niveau suivant si E est pressé sur la exitDoor
+        if (eventManager.isInteractPressed() && currentDoorNearby != nullptr && currentDoorNearby->getDoorType() == Door::DoorType::ExitDoor)
+        {
+            // Générer un nouveau niveau
+            currentLevel = generateNewLevel(window);
+            
+            // Réinitialiser la liste allCharacters avec les nouveaux personnages
+            allCharacters.clear();
+            allCharacters.push_back(player.get());
+            for (auto &character : currentLevel.spawnedCharacters)
+                allCharacters.push_back(character.get());
+            
+            // Repositionner le joueur à la startDoor
+            // La startDoor est à la position (0, 7), ce qui correspond au bas à gauche
+            player->setPosition(20.f, 256.f * 8);
+        }
+
         if (!isPaused && !showPauseMenu)
         {
             // Update
@@ -397,11 +444,11 @@ int main()
                     // Update behavior for non-player characters (enemies)
                     if (NonPlayer *npc = dynamic_cast<NonPlayer *>(character))
                     {
-                        npc->updateBehavior(deltaTime, player.get(), grounds);
+                        npc->updateBehavior(deltaTime, player.get(), currentLevel.grounds);
                     }
                     else
                     {
-                        character->update(deltaTime, grounds);
+                        character->update(deltaTime, currentLevel.grounds);
                     }
                 }
             }
@@ -417,8 +464,8 @@ int main()
             {
                 // Vue de la carte complète
                 // Calcul du centre et de la taille pour voir la map entière
-                float mapWidth = 14.f * 256.f;  // 14 cases de 128 pixels
-                float mapHeight = 8.f * 256.f;   // 8 cases de 128 pixels
+                float mapWidth = 14.f * 274.f;  // 14 cases de 128 pixels
+                float mapHeight = 8.f * 270.f;   // 8 cases de 128 pixels
                 sf::View mapView(sf::Vector2f(mapWidth / 2.f, mapHeight / 2.f), sf::Vector2f(mapWidth, mapHeight));
                 window.setView(mapView);
             }
@@ -434,11 +481,11 @@ int main()
 
         window.draw(backgroundSprite);
 
-        for (auto &g : grounds)
+        for (auto &g : currentLevel.grounds)
             g->draw(window);
 
         // Afficher les objets du jeu (coffres, etc.)
-        for (auto &obj : gameObjects)
+        for (auto &obj : currentLevel.gameObjects)
             obj->draw(window);
 
         // Afficher le hint "[E]" si un coffre est proche
@@ -452,6 +499,20 @@ int main()
             
             sf::Vector2f chestPos = currentChestNearby->getPosition();
             hintText.setPosition(chestPos.x, chestPos.y - 30.f);
+            window.draw(hintText);
+        }
+
+        // Afficher le hint "[E]" si une porte est proche
+        if (currentDoorNearby != nullptr && currentDoorNearby->getDoorType() == Door::DoorType::ExitDoor)
+        {
+            sf::Text hintText;
+            hintText.setFont(font);
+            hintText.setString("[E] Next Level");
+            hintText.setCharacterSize(18);
+            hintText.setFillColor(sf::Color::Cyan);
+            
+            sf::Vector2f doorPos = currentDoorNearby->getPosition();
+            hintText.setPosition(doorPos.x, doorPos.y - 30.f);
             window.draw(hintText);
         }
 

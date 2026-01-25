@@ -1,5 +1,6 @@
 #include "ExitBlock.hpp"
 #include "../objects/Chest.hpp"
+#include "../objects/Door.hpp"
 #include "../factories/CharacterFactory.hpp"
 #include <iostream>
 #include <cstdlib>
@@ -96,14 +97,14 @@ std::vector<std::unique_ptr<Ground>> ExitBlock::buildGrounds(BlockType mask, int
     else
     {
         // La sortie ne fait pas la largeur totale du mur, on laisse un peu de mur de chaque côté pour une ouverture de 100 pixels
-    float sideWidth = (tileSizeX - openingWidth) / 2.f;
-    grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX, tilesPositionY, sideWidth, wallThickness, *TexturedGround::getDefaultTexture()));
-    grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX + sideWidth + openingWidth, tilesPositionY, sideWidth, wallThickness, *TexturedGround::getDefaultTexture()));
+        float sideWidth = (tileSizeX - openingWidth) / 2.f;
+        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX, tilesPositionY, sideWidth, wallThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX + sideWidth + openingWidth, tilesPositionY, sideWidth, wallThickness, *TexturedGround::getDefaultTexture()));
 
-    // If there is a top exit, place a ladder centered in the opening
-    float ladderX = tilesPositionX + sideWidth;
-    float ladderY = tilesPositionY - floorThickness;
-    grounds.emplace_back(std::make_unique<LadderGround>(ladderX, ladderY, openingWidth, tileSizeY + floorThickness, *LadderGround::getDefaultTexture()));
+        // If there is a top exit, place a ladder centered in the opening
+        float ladderX = tilesPositionX + sideWidth;
+        float ladderY = tilesPositionY - floorThickness;
+        grounds.emplace_back(std::make_unique<LadderGround>(ladderX, ladderY, openingWidth, tileSizeY + floorThickness, *LadderGround::getDefaultTexture()));
 
         std::cerr << "ExitBlock: tile(" << posx << "," << posy << ") TOP_EXIT (opening) skipped top wall\n";
     }
@@ -119,9 +120,9 @@ std::vector<std::unique_ptr<Ground>> ExitBlock::buildGrounds(BlockType mask, int
     else
     {
         // La sortie ne fait pas la largeur totale du mur, on laisse un peu de mur de chaque côté pour une ouverture de 100 pixels
-    float sideWidthB = (tileSizeX - openingWidth) / 2.f;
-    grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX, tilesPositionY + tileSizeY - wallThickness, sideWidthB, wallThickness, *TexturedGround::getDefaultTexture()));
-    grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX + sideWidthB + openingWidth, tilesPositionY + tileSizeY - wallThickness, sideWidthB, wallThickness, *TexturedGround::getDefaultTexture()));
+        float sideWidthB = (tileSizeX - openingWidth) / 2.f;
+        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX, tilesPositionY + tileSizeY - wallThickness, sideWidthB, wallThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX + sideWidthB + openingWidth, tilesPositionY + tileSizeY - wallThickness, sideWidthB, wallThickness, *TexturedGround::getDefaultTexture()));
         std::cerr << "ExitBlock: tile(" << posx << "," << posy << ") BOTTOM_EXIT (opening) skipped bottom wall\n";
     }
 
@@ -132,10 +133,54 @@ std::vector<std::unique_ptr<Object>> ExitBlock::createObjects()
 {
     std::vector<std::unique_ptr<Object>> objects;
 
+    // Ajouter la porte de départ en bas à gauche (0, 7)
+    if (posx_ == 0 && posy_ == 7)
+    {
+        float tileSizeX = static_cast<float>(window_->getSize().x) / static_cast<float>(GRID_COLS);
+        float tileSizeY = static_cast<float>(window_->getSize().y) / static_cast<float>(GRID_ROWS);
+
+        float tilesPositionX = tileSizeX * static_cast<float>(posx_);
+        float tilesPositionY = tileSizeY * static_cast<float>(posy_);
+
+        float posX = tilesPositionX + 8.f; // Slight offset from left wall
+        float posY = tilesPositionY + 8.f; // Slight offset from bottom wall
+
+        sf::Vector2f doorPosition(posX, posY);
+        auto doorTexture = std::make_shared<sf::Texture>();
+        if (!doorTexture->loadFromFile("src/assets/images/startDoor.png"))
+        {
+            // Fallback to absolute path if relative path fails
+            doorTexture->loadFromFile("/home/thomas/Documents/GitHub/GameOfThomas/src/assets/images/startDoor.png");
+        }
+        objects.emplace_back(std::make_unique<Door>(doorPosition, doorTexture, Door::DoorType::StartDoor));
+    }
+
+    // Ajouter la porte de sortie en haut à droite (13, 0)
+    if (posx_ == 13 && posy_ == 0)
+    {
+        float tileSizeX = static_cast<float>(window_->getSize().x) / static_cast<float>(GRID_COLS);
+        float tileSizeY = static_cast<float>(window_->getSize().y) / static_cast<float>(GRID_ROWS);
+
+        float tilesPositionX = tileSizeX * static_cast<float>(posx_);
+        float tilesPositionY = tileSizeY * static_cast<float>(posy_);
+
+        float posX = tilesPositionX + 8.f; // Slight offset from right wall
+        float posY = tilesPositionY + 8.f; // Slight offset from top wall
+
+        sf::Vector2f doorPosition(posX, posY);
+        auto doorTexture = std::make_shared<sf::Texture>();
+        if (!doorTexture->loadFromFile("src/assets/images/ExitDoor.png"))
+        {
+            // Fallback to absolute path if relative path fails
+            doorTexture->loadFromFile("/home/thomas/Documents/GitHub/GameOfThomas/src/assets/images/ExitDoor.png");
+        }
+        objects.emplace_back(std::make_unique<Door>(doorPosition, doorTexture, Door::DoorType::ExitDoor));
+    }
+
     // Vérifier qu'il n'y a pas de sorties en haut ou en bas
     if ((mask_ & TOP_EXIT) || (mask_ & BOTTOM_EXIT))
     {
-        return objects;  // Pas de coffre si sorties en haut ou bas
+        return objects; // Pas de coffre si sorties en haut ou bas
     }
 
     // Générer le coffre selon le pourcentage de chance
@@ -145,18 +190,18 @@ std::vector<std::unique_ptr<Object>> ExitBlock::createObjects()
         // Calculer la position en utilisant la même méthode que buildGrounds()
         float tileSizeX = static_cast<float>(window_->getSize().x) / static_cast<float>(GRID_COLS);
         float tileSizeY = static_cast<float>(window_->getSize().y) / static_cast<float>(GRID_ROWS);
-        
+
         float tilesPositionX = tileSizeX * static_cast<float>(posx_);
         float tilesPositionY = tileSizeY * static_cast<float>(posy_);
 
         float wallThickness = 8.f;
         // Le coffre fait 32x32 pixels mis à l'échelle 4x = 128x128 pixels
-        float chestWidth = 32.f * 4.f;   // 128 pixels
-        float chestHeight = 32.f * 4.f;  // 128 pixels
+        float chestWidth = 32.f * 4.f;  // 128 pixels
+        float chestHeight = 32.f * 4.f; // 128 pixels
 
         // Centrer le coffre dans le bloc
         float posX = tilesPositionX + (tileSizeX - chestWidth) / 2.f;
-        float posY = tilesPositionY + tileSizeY - chestHeight - wallThickness;  // Posé sur le sol
+        float posY = tilesPositionY + tileSizeY - chestHeight - wallThickness; // Posé sur le sol
 
         sf::Vector2f chestPosition(posX, posY);
         std::shared_ptr<sf::Texture> chestTextureClose = std::make_shared<sf::Texture>();
@@ -186,7 +231,7 @@ std::vector<std::unique_ptr<GameCharacter>> ExitBlock::createCharacters()
     // Vérifier qu'il n'y a pas de sorties en haut ou en bas
     if ((mask_ & TOP_EXIT) || (mask_ & BOTTOM_EXIT))
     {
-        return characters;  // Pas de mobs si sorties en haut ou bas
+        return characters; // Pas de mobs si sorties en haut ou bas
     }
 
     // Générer un mob selon le pourcentage de chance
@@ -196,7 +241,7 @@ std::vector<std::unique_ptr<GameCharacter>> ExitBlock::createCharacters()
         // Calculer la position en utilisant la même méthode que buildGrounds()
         float tileSizeX = static_cast<float>(window_->getSize().x) / static_cast<float>(GRID_COLS);
         float tileSizeY = static_cast<float>(window_->getSize().y) / static_cast<float>(GRID_ROWS);
-        
+
         float tilesPositionX = tileSizeX * static_cast<float>(posx_);
         float tilesPositionY = tileSizeY * static_cast<float>(posy_);
 
@@ -205,10 +250,10 @@ std::vector<std::unique_ptr<GameCharacter>> ExitBlock::createCharacters()
         float posY = tilesPositionY + tileSizeY / 2.f;
 
         sf::Vector2f mobPosition(posX, posY);
-        
+
         auto mob = CharacterFactory::createCandle(mobPosition);
         std::cout << "Mob (Candle) created in ExitBlock at grid(" << posx_ << ", " << posy_ << ") with world position (" << posX << ", " << posY << ")" << std::endl;
-        
+
         characters.push_back(std::move(mob));
     }
 

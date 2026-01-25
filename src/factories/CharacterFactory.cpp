@@ -41,7 +41,7 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
     player->setAnimationTexture(AnimationState::WalkRight, textureWalkRight, 4, 32, 32, 6.f);
     player->setAnimationTexture(AnimationState::WalkLeft, textureWalkLeft, 4, 32, 32, 6.f);
     player->setAnimationTexture(AnimationState::Attack, textureAttack, 5, 32, 32, 10.f);
-    player->setPosition(windowSize.x / 2.f, windowSize.y / 2.f);
+    player->setPosition(20.f, 256.f * 8);
     player->setHitbox(5.f, 7.f, 17.f, 25.f);
 
     return player;

@@ -8,8 +8,7 @@ Object::Object(const std::string &name, const sf::Vector2f &position, std::share
 {
     sprite.setTexture(*this->texture);
     sprite.setPosition(position);
-    // Scaling par défaut (4x comme les autres éléments du jeu)
-    sprite.setScale(4.f, 4.f);
+    // Scaling spécifié dans les classes héritantes
     hitbox = sf::FloatRect(position.x, position.y, 32.f * 4.f, 32.f * 4.f);
 }
 
