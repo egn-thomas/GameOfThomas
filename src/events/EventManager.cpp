@@ -56,6 +56,9 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
 {
     sf::Vector2f direction(0.f, 0.f);
 
+    // Réinitialiser le flag d'interaction
+    interactPressed = false;
+
     // Déplacemnts Standard
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
         direction.x -= 1.f;
@@ -98,6 +101,21 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
     {
         player.attack(Direction::Left, allCharacters);
+    }
+
+    // Interaction (E pour ouvrir coffres, etc.)
+    static bool eKeyPressed = false;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+    {
+        if (!eKeyPressed)
+        {
+            interactPressed = true;
+            eKeyPressed = true;
+        }
+    }
+    else
+    {
+        eKeyPressed = false;
     }
 
     // Vue de la carte (M pour map)

@@ -10,6 +10,8 @@ class Chest : public Object
 {
 private:
     bool isOpened = false;  // État du coffre
+    std::shared_ptr<sf::Texture> closedTexture;
+    std::shared_ptr<sf::Texture> openedTexture;
 
 public:
     /**
@@ -26,7 +28,16 @@ public:
 
     /**
      * @brief Ouvre le coffre
-     * À développer plus tard avec la logique de récompense
      */
-    virtual void open();
+    void open();
+
+    /**
+     * @brief Définit la texture du coffre
+     */
+    void setTexture(bool opened);
+
+    /**
+     * @brief Vérifie si le joueur est sur le coffre
+     */
+    bool isPlayerOnChest(const sf::FloatRect &playerBounds) const;
 };

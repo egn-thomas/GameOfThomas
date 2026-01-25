@@ -17,6 +17,7 @@
 #include "./blocks/BlockTypeUtils.hpp"
 #include "./environnement/ModelGenerator.hpp"
 #include "./environnement/Node.hpp"
+#include "./objects/Chest.hpp"
 #include <iostream>
 
 int main()
@@ -24,6 +25,15 @@ int main()
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Game of Thomas", sf::Style::Fullscreen);
     window.setFramerateLimit(60);
     window.setVerticalSyncEnabled(true);
+
+    //---------------------------------
+    // Chargement de la police pour les hints
+    //---------------------------------
+    sf::Font font;
+    if (!font.loadFromFile("../src/assets/fonts/RobotoMono-Regular.ttf"))
+    {
+        std::cerr << "Warning: Could not load font for hints" << std::endl;
+    }
 
     //---------------------------------
     // Création du background de la fenêtre
@@ -58,6 +68,8 @@ int main()
 
     std::vector<std::unique_ptr<Block>> blocks;
     std::vector<std::unique_ptr<Ground>> grounds;
+    std::vector<std::unique_ptr<Object>> gameObjects;
+    std::vector<std::unique_ptr<GameCharacter>> spawnedCharacters;
 
     ModelGenerator mg(14, 8);
     for (Node *n : mg.getGrid())
@@ -75,8 +87,15 @@ int main()
         for (auto &g : created)
             grounds.push_back(std::move(g));
 
-        // Traiter l'ajout d'objets au node
-        n->processAddingObject();
+        // Créer les objets du bloc (coffres, etc.)
+        auto objects = blocks.back()->createObjects();
+        for (auto &obj : objects)
+            gameObjects.push_back(std::move(obj));
+
+        // Créer les mobs du bloc
+        auto characters = blocks.back()->createCharacters();
+        for (auto &character : characters)
+            spawnedCharacters.push_back(std::move(character));
     }
 
     int mismatches = 0;
@@ -213,11 +232,11 @@ int main()
                     float edgeX = (x + 1) * tileSizeX;
                     float edgeY = y * tileSizeY + tileSizeY * 0.1f;
                     float edgeH = tileSizeY * 0.8f;
-                    if (isBlockedBetween(edgeX - probeThickness / 2.f, edgeY, probeThickness, edgeH))
-                    {
-                        std::cerr << "Blocked opening between (" << x << "," << y << ") and (" << r->getxPos() << "," << r->getyPos() << ") at X=" << edgeX << "\n";
-                        ++blockedCount;
-                    }
+                    // if (isBlockedBetween(edgeX - probeThickness / 2.f, edgeY, probeThickness, edgeH))
+                    // {
+                    //     std::cerr << "Blocked opening between (" << x << "," << y << ") and (" << r->getxPos() << "," << r->getyPos() << ") at X=" << edgeX << "\n";
+                    //     ++blockedCount;
+                    // }
                 }
             }
 
@@ -229,11 +248,11 @@ int main()
                     float edgeX = x * tileSizeX + tileSizeX * 0.1f;
                     float edgeY = (y + 1) * tileSizeY;
                     float edgeW = tileSizeX * 0.8f;
-                    if (isBlockedBetween(edgeX, edgeY - probeThickness / 2.f, edgeW, probeThickness))
-                    {
-                        std::cerr << "Blocked opening between (" << x << "," << y << ") and (" << b->getxPos() << "," << b->getyPos() << ") at Y=" << edgeY << "\n";
-                        ++blockedCount;
-                    }
+                    // if (isBlockedBetween(edgeX, edgeY - probeThickness / 2.f, edgeW, probeThickness))
+                    // {
+                    //     std::cerr << "Blocked opening between (" << x << "," << y << ") and (" << b->getxPos() << "," << b->getyPos() << ") at Y=" << edgeY << "\n";
+                    //     ++blockedCount;
+                    // }
                 }
             }
         }
@@ -262,6 +281,8 @@ int main()
     allCharacters.push_back(player.get());
     for (auto &npc : npcs)
         allCharacters.push_back(npc.get());
+    for (auto &character : spawnedCharacters)
+        allCharacters.push_back(character.get());
 
     EventManager eventManager(window);
     DevMode dev(true);
@@ -270,6 +291,9 @@ int main()
     PauseMenu pauseMenu;
     bool showPauseMenu = false;
     bool isPaused = false;
+
+    // Variables pour la gestion des coffres
+    Chest* currentChestNearby = nullptr;
 
     //---------------------------------
     // Boucle principale
@@ -294,7 +318,7 @@ int main()
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
             {
                 eventManager.setPaused(!eventManager.isPaused());
-                std::cout << "[DEBUG MAIN] Échap détecté! paused = " << eventManager.isPaused() << std::endl;
+                // std::cout << "[DEBUG MAIN] Échap détecté! paused = " << eventManager.isPaused() << std::endl;
             }
                 
             // Gestion du menu de pause
@@ -327,7 +351,7 @@ int main()
         {
             if (!showPauseMenu)
             {
-                std::cout << "[DEBUG MAIN] Mise en pause, affichage du menu" << std::endl;
+                // std::cout << "[DEBUG MAIN] Mise en pause, affichage du menu" << std::endl;
                 showPauseMenu = true;
                 pauseMenu.resetSelection();
             }
@@ -335,12 +359,33 @@ int main()
         else
         {
             if (showPauseMenu)
-                std::cout << "[DEBUG MAIN] Reprise du jeu, masquage du menu" << std::endl;
+                // std::cout << "[DEBUG MAIN] Reprise du jeu, masquage du menu" << std::endl;
             showPauseMenu = false;
         }
 
         // Toujours appeler processEvents pour détecter Échap et les inputs du menu
         eventManager.processEvents(*player, allCharacters);
+
+        // Détection des coffres proches du joueur
+        currentChestNearby = nullptr;
+        sf::FloatRect playerBounds = player->getBounds();
+        for (auto &chest : gameObjects)
+        {
+            if (Chest *c = dynamic_cast<Chest *>(chest.get()))
+            {
+                if (!c->getIsOpened() && c->isPlayerOnChest(playerBounds))
+                {
+                    currentChestNearby = c;
+                    break;
+                }
+            }
+        }
+
+        // Ouvrir le coffre si E est pressé
+        if (eventManager.isInteractPressed() && currentChestNearby != nullptr)
+        {
+            currentChestNearby->open();
+        }
 
         if (!isPaused && !showPauseMenu)
         {
@@ -392,13 +437,22 @@ int main()
         for (auto &g : grounds)
             g->draw(window);
 
-        // Afficher les objets contenus dans chaque node
-        for (Node *n : mg.getGrid())
+        // Afficher les objets du jeu (coffres, etc.)
+        for (auto &obj : gameObjects)
+            obj->draw(window);
+
+        // Afficher le hint "[E]" si un coffre est proche
+        if (currentChestNearby != nullptr && !currentChestNearby->getIsOpened())
         {
-            for (auto &obj : n->objectsInNode)
-            {
-                obj.draw(window);
-            }
+            sf::Text hintText;
+            hintText.setFont(font);
+            hintText.setString("[E]");
+            hintText.setCharacterSize(20);
+            hintText.setFillColor(sf::Color::Yellow);
+            
+            sf::Vector2f chestPos = currentChestNearby->getPosition();
+            hintText.setPosition(chestPos.x, chestPos.y - 30.f);
+            window.draw(hintText);
         }
 
             for (auto *character : allCharacters)
@@ -410,7 +464,7 @@ int main()
         // Afficher le menu de pause si actif
         if (showPauseMenu)
         {
-            std::cout << "[DEBUG MAIN] Dessin du menu de pause" << std::endl;
+            // std::cout << "[DEBUG MAIN] Dessin du menu de pause" << std::endl;
             
             // Sauvegarder la vue actuelle (vue du jeu zoomée)
             sf::View currentView = window.getView();

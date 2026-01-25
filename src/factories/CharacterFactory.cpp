@@ -82,3 +82,25 @@ std::vector<std::unique_ptr<NonPlayer>> CharacterFactory::createNonPlayer(
 
     return npcs;
 }
+
+/**
+ * @brief Crée une Candle à une position spécifique
+ * @param position Position du mob dans le monde
+ * @return std::unique_ptr<Candle> Pointeur unique vers la Candle créée
+ */
+std::unique_ptr<Candle> CharacterFactory::createCandle(const sf::Vector2f &position)
+{
+    auto pnjTexture = std::make_shared<sf::Texture>();
+    if (!pnjTexture->loadFromFile("../src/assets/images/nonPlayerBaseAnimation.png"))
+    {
+        std::cerr << "Failed to load nonPlayer texture! Using empty fallback texture." << std::endl;
+        pnjTexture->create(32, 32);
+    }
+
+    auto candle = std::make_unique<Candle>("Candle", 50, 10, 150.f, pnjTexture);
+    candle->setPosition(position.x, position.y);
+    candle->setAnimationParams(4, 32, 32, 6.f);
+    candle->setHitbox(3.f, 0.f, 26.f, 32.f);
+
+    return candle;
+}

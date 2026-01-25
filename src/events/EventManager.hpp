@@ -16,12 +16,14 @@ public:
     void toggleMapView() { showMapView = !showMapView; }
     bool isPaused() const { return paused; }
     void setPaused(bool state) { paused = state; }
+    bool isInteractPressed() const { return interactPressed; }
 
 private:
     sf::RenderWindow& window;
     std::vector<std::unique_ptr<Event>> eventQueue;
     bool showMapView = false;
     bool paused = false;
+    bool interactPressed = false;
     
     void handleKeyboard(Player& player, float deltaTime,  std::vector<GameCharacter *> allCharacters);
 };

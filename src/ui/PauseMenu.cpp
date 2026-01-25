@@ -43,7 +43,7 @@ void PauseMenu::initializeMenu()
 
 void PauseMenu::draw(sf::RenderWindow& window)
 {
-    std::cout << "[DEBUG PAUSEMENU] draw() appelé" << std::endl;
+    // std::cout << "[DEBUG PAUSEMENU] draw() appelé" << std::endl;
     // Dessiner un fond semi-transparent
     sf::RectangleShape overlay(sf::Vector2f(window.getSize().x, window.getSize().y));
     overlay.setFillColor(sf::Color(0, 0, 0, 200));
