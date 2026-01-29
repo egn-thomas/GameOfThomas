@@ -169,10 +169,10 @@ std::vector<std::unique_ptr<Object>> ExitBlock::createObjects()
 
         sf::Vector2f doorPosition(posX, posY);
         auto doorTexture = std::make_shared<sf::Texture>();
-        if (!doorTexture->loadFromFile("src/assets/images/ExitDoor.png"))
+        if (!doorTexture->loadFromFile("src/assets/images/exitDoor.png"))
         {
             // Fallback to absolute path if relative path fails
-            doorTexture->loadFromFile("/home/thomas/Documents/GitHub/GameOfThomas/src/assets/images/ExitDoor.png");
+            doorTexture->loadFromFile("/home/thomas/Documents/GitHub/GameOfThomas/src/assets/images/exitDoor.png");
         }
         objects.emplace_back(std::make_unique<Door>(doorPosition, doorTexture, Door::DoorType::ExitDoor));
     }

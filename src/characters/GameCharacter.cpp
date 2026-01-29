@@ -247,13 +247,12 @@ void GameCharacter::collisionsToZero()
  */
 void GameCharacter::setHitbox(float offsetX, float offsetY, float width, float height)
 {
+    // store raw hitbox (unscaled) as default for animations
+    defaultHitboxRaw = sf::FloatRect(offsetX, offsetY, width, height);
+    // apply sprite scale to compute actual hitbox used for collisions
     float scaleX = sprite.getScale().x;
     float scaleY = sprite.getScale().y;
-    offsetX *= scaleX;
-    offsetY *= scaleY;
-    width *= scaleX;
-    height *= scaleY;
-    hitbox = sf::FloatRect(offsetX, offsetY, width, height);
+    hitbox = sf::FloatRect(offsetX * scaleX, offsetY * scaleY, width * scaleX, height * scaleY);
 }
 
 /**
@@ -291,7 +290,7 @@ void GameCharacter::selfAnimator(float deltaTime)
             currentFrame = (currentFrame + 1) % frameCount;
 
             // Si animation d'attaque terminée, revenir à Idle
-            if (currentState == AnimationState::Attack && currentFrame == 0)
+            if ((currentState == AnimationState::AttackLeft || currentState == AnimationState::AttackRight) && currentFrame == 0)
             {
                 setAnimationState(AnimationState::Idle);
             }
@@ -301,17 +300,8 @@ void GameCharacter::selfAnimator(float deltaTime)
         sf::IntRect rect;
         rect.top = 0;
         rect.height = frameHeight;
-
-        if (facingLeft)
-        {
-            rect.left = (currentFrame + 1) * frameWidth;
-            rect.width = -frameWidth; // flip horizontal
-        }
-        else
-        {
-            rect.left = currentFrame * frameWidth;
-            rect.width = frameWidth;
-        }
+        rect.left = currentFrame * frameWidth;
+        rect.width = frameWidth;
 
         sprite.setTextureRect(rect);
     }
@@ -328,7 +318,7 @@ void GameCharacter::selfAnimator(float deltaTime)
 void GameCharacter::walkAnimator(float deltaTime)
 {
     // Ne pas modifier l'animation si on est en train d'attaquer
-    if (currentState == AnimationState::Attack)
+    if (currentState == AnimationState::AttackLeft || currentState == AnimationState::AttackRight)
         return;
 
     float deltaX = position.x - previousPosition.x;
@@ -362,7 +352,10 @@ void GameCharacter::attackAnimator(float deltaTime, Direction direction)
     // Déterminer l’orientation
     facingLeft = (direction == Direction::Left);
     // Mettre l'animation d'attaque
-    setAnimationState(AnimationState::Attack);
+    if (facingLeft)
+        setAnimationState(AnimationState::AttackLeft);
+    else
+        setAnimationState(AnimationState::AttackRight);
 }
 
 /**
@@ -398,7 +391,34 @@ void GameCharacter::setAnimationState(AnimationState newState)
             currentFrame = 0;
             timer = 0.f;
             sprite.setTextureRect(sf::IntRect(0, 0, frameWidth, frameHeight));
+            // Update hitbox for this animation if a specific one exists, otherwise use default
+            auto hitIt = animationHitboxesRaw.find(newState);
+            sf::FloatRect raw;
+            if (hitIt != animationHitboxesRaw.end())
+            {
+                raw = hitIt->second;
+            }
+            else
+            {
+                raw = defaultHitboxRaw;
+            }
+            // apply current sprite scale
+            float scaleX = sprite.getScale().x;
+            float scaleY = sprite.getScale().y;
+            hitbox = sf::FloatRect(raw.left * scaleX, raw.top * scaleY, raw.width * scaleX, raw.height * scaleY);
         }
+    }
+}
+
+void GameCharacter::setAnimationHitbox(AnimationState state, float offsetX, float offsetY, float width, float height)
+{
+    animationHitboxesRaw[state] = sf::FloatRect(offsetX, offsetY, width, height);
+    // if currently in this state, apply immediately
+    if (currentState == state)
+    {
+        float scaleX = sprite.getScale().x;
+        float scaleY = sprite.getScale().y;
+        hitbox = sf::FloatRect(offsetX * scaleX, offsetY * scaleY, width * scaleX, height * scaleY);
     }
 }
 
@@ -525,7 +545,9 @@ void GameCharacter::allCooldowns(float deltaTime)
     if (damageTimer > 0.f)
     {
         damageTimer -= deltaTime;
-    } else {
+    }
+    else
+    {
         isDamaged = false;
         sprite.setColor(sf::Color(255, 255, 255));
     }

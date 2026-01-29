@@ -11,7 +11,8 @@ enum class AnimationState
     Idle,
     WalkRight,
     WalkLeft,
-    Attack
+    AttackLeft,
+    AttackRight
 };
 
 class GameCharacter
@@ -88,6 +89,9 @@ protected:
     };
 
     std::unordered_map<AnimationState, AnimationData> animations;
+    // Raw hitbox definitions (values before sprite scaling)
+    sf::FloatRect defaultHitboxRaw{0.f, 0.f, 0.f, 0.f};
+    std::unordered_map<AnimationState, sf::FloatRect> animationHitboxesRaw;
 
 public:
     GameCharacter(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture);
@@ -120,6 +124,7 @@ public:
     void attackAnimator(float deltaTime, Direction direction);
     void setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps);
     void setAnimationState(AnimationState newState);
+    void setAnimationHitbox(AnimationState state, float offsetX, float offsetY, float width, float height);
     virtual void draw(sf::RenderWindow &window);
     void setAnimationParams(int frameCount, int frameWidth, int frameHeight, float fps);
 
