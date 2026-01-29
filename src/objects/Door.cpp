@@ -8,8 +8,8 @@ Door::Door(const sf::Vector2f &position, std::shared_ptr<sf::Texture> texture, D
 {
     // Scaling pour les portes (plus petit que les autres objets)
     sprite.setScale(2.f, 2.f);
-    // Redimensionner la hitbox pour correspondre au scaling
-    hitbox = sf::FloatRect(position.x, position.y, 32.f * 2.f, 32.f * 2.f);
+    // Redimensionner la hitbox pour correspondre au scaling (texture 128x128 * scale 2)
+    hitbox = sf::FloatRect(position.x, position.y, 128.f * 2.f, 128.f * 2.f);
 }
 
 /**
