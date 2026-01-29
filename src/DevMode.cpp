@@ -89,6 +89,34 @@ void DevMode::drawDebugOverlays(sf::RenderWindow &window, const GameCharacter &p
         ch.setOutlineThickness(1.f);
         window.draw(ch);
     }
+
+    // draw attack hitboxes (player)
+    if (player.hasAttackHitbox())
+    {
+        sf::FloatRect ab = player.getAttackHitbox();
+        sf::RectangleShape ah(sf::Vector2f(ab.width, ab.height));
+        ah.setPosition(ab.left, ab.top);
+        ah.setFillColor(sf::Color::Transparent);
+        ah.setOutlineColor(sf::Color::Cyan);
+        ah.setOutlineThickness(1.f);
+        window.draw(ah);
+    }
+
+    // draw attack hitboxes (others)
+    for (auto c : allCharacters)
+    {
+        if (c == &player) continue;
+        if (c->hasAttackHitbox())
+        {
+            sf::FloatRect ab = c->getAttackHitbox();
+            sf::RectangleShape ah(sf::Vector2f(ab.width, ab.height));
+            ah.setPosition(ab.left, ab.top);
+            ah.setFillColor(sf::Color::Transparent);
+            ah.setOutlineColor(sf::Color::Cyan);
+            ah.setOutlineThickness(1.f);
+            window.draw(ah);
+        }
+    }
 }
 
 /**

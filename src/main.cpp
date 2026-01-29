@@ -521,6 +521,7 @@ int main()
                 character->draw(window);
 
         dev.drawInfo(window, *player, allCharacters);
+        dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
 
         // Afficher le menu de pause si actif
         if (showPauseMenu)

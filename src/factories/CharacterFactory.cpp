@@ -52,13 +52,16 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
     player->setAnimationHitbox(AnimationState::WalkRight, 10.f, 13.f, 12.f, 19.f);
     player->setAnimationTexture(AnimationState::WalkLeft, textureWalkLeft, 4, 32, 32, 8.f);
     player->setAnimationHitbox(AnimationState::WalkLeft, 4.f, 13.f, 12.f, 19.f);
+    player->setAnimationSpriteOffset(AnimationState::WalkLeft, 4.f, 0.f);
     player->setAnimationTexture(AnimationState::AttackLeft, textureAttackLeft, 9, 96, 32, 15.f);
-    player->setAnimationHitbox(AnimationState::AttackLeft, 68.f, 13.f, 10.f, 19.f);
+    player->setAnimationSpriteOffset(AnimationState::AttackLeft, -58.f, 0.f);
     player->setAnimationTexture(AnimationState::AttackRight, textureAttackRight, 9, 96, 32, 15.f);
-    player->setAnimationHitbox(AnimationState::AttackRight, 7.f, 13.f, 11.f, 19.f);
+    player->setAnimationSpriteOffset(AnimationState::AttackRight, 0.f, 0.f); // no offset needed
     player->setPosition(20.f, 256.f * 8);
     // default hitbox (will be used unless a per-animation hitbox is set)
     player->setHitbox(7.f, 13.f, 11.f, 19.f);
+    // Configure attack type params (SwordAttack)
+    player->setAttackTypeParams(AttackType::SwordAttack, 170.f, 60.f, 19.f, 10, 0.2f);
 
     return player;
 }

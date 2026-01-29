@@ -289,19 +289,30 @@ void GameCharacter::selfAnimator(float deltaTime)
             timer = 0.f;
             currentFrame = (currentFrame + 1) % frameCount;
 
-            // Si animation d'attaque terminée, revenir à Idle
+            // Si animation d'attaque terminée, revenir à Idle mais conserver facingLeft
             if ((currentState == AnimationState::AttackLeft || currentState == AnimationState::AttackRight) && currentFrame == 0)
             {
                 setAnimationState(AnimationState::Idle);
+                // facingLeft est déjà set par attackAnimator, pas besoin de le modifier
             }
         }
 
-        // Calculer l’IntRect final
+        // Calculer l'IntRect final
         sf::IntRect rect;
         rect.top = 0;
         rect.height = frameHeight;
-        rect.left = currentFrame * frameWidth;
-        rect.width = frameWidth;
+
+        // Si on est en Idle et qu'on fait face à gauche, retourner le sprite
+        if (currentState == AnimationState::Idle && facingLeft)
+        {
+            rect.left = (currentFrame + 1) * frameWidth;
+            rect.width = -frameWidth; // flip horizontal
+        }
+        else
+        {
+            rect.left = currentFrame * frameWidth;
+            rect.width = frameWidth;
+        }
 
         sprite.setTextureRect(rect);
     }
@@ -406,6 +417,16 @@ void GameCharacter::setAnimationState(AnimationState newState)
             float scaleX = sprite.getScale().x;
             float scaleY = sprite.getScale().y;
             hitbox = sf::FloatRect(raw.left * scaleX, raw.top * scaleY, raw.width * scaleX, raw.height * scaleY);
+            // Update sprite offset for this animation
+            auto offsetIt = animationSpriteOffsetsRaw.find(newState);
+            if (offsetIt != animationSpriteOffsetsRaw.end())
+            {
+                currentSpriteOffset = offsetIt->second * sprite.getScale().x; // scale offset by sprite scale
+            }
+            else
+            {
+                currentSpriteOffset = {0.f, 0.f};
+            }
         }
     }
 }
@@ -422,6 +443,16 @@ void GameCharacter::setAnimationHitbox(AnimationState state, float offsetX, floa
     }
 }
 
+void GameCharacter::setAnimationSpriteOffset(AnimationState state, float offsetX, float offsetY)
+{
+    animationSpriteOffsetsRaw[state] = {offsetX, offsetY};
+    // if currently in this state, apply immediately
+    if (currentState == state)
+    {
+        currentSpriteOffset = {offsetX * sprite.getScale().x, offsetY * sprite.getScale().y};
+    }
+}
+
 /**
  * @brief Dessine le personnage
  *
@@ -429,7 +460,11 @@ void GameCharacter::setAnimationHitbox(AnimationState state, float offsetX, floa
  */
 void GameCharacter::draw(sf::RenderWindow &window)
 {
+    // Apply sprite offset for rendering
+    sf::Vector2f originalPos = sprite.getPosition();
+    sprite.setPosition(originalPos + currentSpriteOffset);
     window.draw(sprite);
+    sprite.setPosition(originalPos);
 }
 
 /**
@@ -461,30 +496,40 @@ void GameCharacter::setAnimationParams(int count, int width, int height, float f
  */
 void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets)
 {
+    // default to SwordAttack for backward compatibility
+    attack(dir, targets, AttackType::SwordAttack);
+}
+
+void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type)
+{
     if (attackCooldown > 0.f)
         return;
-    const float attackRange = 100.f;               // pixels
-    const float attackHeight = getBounds().height; // même hauteur que le personnage
+    // look up attack type parameters (fallback to defaults if not set)
+    AttackData data;
+    auto it = attackTypes.find(type);
+    if (it != attackTypes.end())
+        data = it->second;
+
+    float attackRange = data.range;
+    float attackTop = position.y + data.topOffset;
+    float attackHeight = (data.height > 0.f) ? data.height : getBounds().height;
+    int damage = data.damage;
+    float delay = data.delay;
 
     attackAnimator(0.f, dir);
 
-    // Créer une hitbox pour l'attaque
+    // Créer une hitbox pour l'attaque en fonction du type
     sf::FloatRect attackBox;
-
     if (dir == Direction::Right)
-    {
         attackBox.left = position.x + getBounds().width; // à droite du personnage
-    }
     else
-    {
         attackBox.left = position.x - attackRange; // à gauche
-    }
 
-    attackBox.top = position.y;
+    attackBox.top = attackTop;
     attackBox.width = attackRange;
     attackBox.height = attackHeight;
 
-    // Vérifier collision avec tous les cibles
+    // Vérifier collision avec tous les cibles et ajouter à la liste des hits en attente
     for (auto target : targets)
     {
         if (target == this)
@@ -492,10 +537,16 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets)
 
         if (attackBox.intersects(target->getBounds()))
         {
-            target->takeDamage(10);
-            std::cout << target->getHp() << std::endl;
+            // Ajouter un hit en attente avec délai de 'delay'
+            pendingHits.push_back({target, delay, damage});
+            std::cout << "Pending hit queued for " << target->getName() << " in " << delay << "s" << std::endl;
         }
     }
+
+    // store attack box for debug display for a short duration
+    lastAttackBox = attackBox;
+    hasAttackBox = true;
+    attackBoxTimer = (delay > 0.f) ? delay : attackBoxDuration;
 
     attackCooldown = attackCooldownMax;
 }
@@ -538,10 +589,48 @@ bool GameCharacter::isAlive() const
  */
 void GameCharacter::allCooldowns(float deltaTime)
 {
+    // Process pending delayed hits
+    for (auto it = pendingHits.begin(); it != pendingHits.end(); )
+    {
+        it->delayTimer -= deltaTime;
+        if (it->delayTimer <= 0.f)
+        {
+            if (it->target)
+            {
+                it->target->takeDamage(it->damage);
+            }
+            it = pendingHits.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    // Attack box display timer
+    if (hasAttackBox)
+    {
+        attackBoxTimer -= deltaTime;
+        if (attackBoxTimer <= 0.f)
+        {
+            hasAttackBox = false;
+            lastAttackBox = sf::FloatRect(0.f,0.f,0.f,0.f);
+        }
+    }
+
     if (dashCooldown > 0.f)
         dashCooldown -= deltaTime;
     if (attackCooldown > 0.f)
         attackCooldown -= deltaTime;
+
+    // Stun
+    if (stunTimer > 0.f)
+    {
+        stunTimer -= deltaTime;
+        if (stunTimer <= 0.f)
+            isStunned = false;
+    }
+
     if (damageTimer > 0.f)
     {
         damageTimer -= deltaTime;
@@ -653,4 +742,33 @@ std::string GameCharacter::getName() const
 bool GameCharacter::isCanDash() const
 {
     return canDash;
+}
+
+bool GameCharacter::hasAttackHitbox() const
+{
+    return hasAttackBox;
+}
+
+sf::FloatRect GameCharacter::getAttackHitbox() const
+{
+    return lastAttackBox;
+}
+
+void GameCharacter::setAttackTypeParams(AttackType type, float range, float topOffset, float height, int damage, float delay)
+{
+    AttackData d;
+    d.range = range;
+    d.topOffset = topOffset;
+    d.height = height;
+    d.damage = damage;
+    d.delay = delay;
+    attackTypes[type] = d;
+}
+
+GameCharacter::AttackData GameCharacter::getAttackTypeParams(AttackType type) const
+{
+    auto it = attackTypes.find(type);
+    if (it != attackTypes.end())
+        return it->second;
+    return AttackData();
 }

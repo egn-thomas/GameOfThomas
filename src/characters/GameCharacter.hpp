@@ -5,6 +5,7 @@
 #include "Direction.hpp"
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 enum class AnimationState
 {
@@ -15,6 +16,10 @@ enum class AnimationState
     AttackRight
 };
 
+enum class AttackType
+{
+    SwordAttack
+};
 class GameCharacter
 {
 private:
@@ -71,7 +76,36 @@ private:
 
     bool isDamaged = false;
     float damageTimer = 0.f;
+    
+    // Stun system
+    bool isStunned = false;
+    float stunTimer = 0.f;
+    const float stunDuration = 0.5f; // Durée du stun
+    
+    // Damage delay system
+    struct PendingHit {
+        GameCharacter* target;
+        float delayTimer;
+        int damage;
+    };
+    std::vector<PendingHit> pendingHits;
+    const float damageDelayDuration = 0.2f;
+    // Last computed attack box for debug/visualization
+    sf::FloatRect lastAttackBox{0.f,0.f,0.f,0.f};
+    bool hasAttackBox = false;
+    float attackBoxTimer = 0.f;
+    const float attackBoxDuration = damageDelayDuration; // show attack box for same delay
 
+    struct AttackData
+    {
+        float range = 100.f;     // horizontal reach in pixels
+        float topOffset = 0.f;   // offset from character.position.y for attack box top
+        float height = 0.f;      // if 0 => use getBounds().height
+        int damage = 10;
+        float delay = 0.2f;      // delay before applying damage
+    };
+
+    std::unordered_map<AttackType, AttackData> attackTypes;
 protected:
     std::shared_ptr<sf::Texture> texture;
     bool onGround = false;
@@ -92,6 +126,9 @@ protected:
     // Raw hitbox definitions (values before sprite scaling)
     sf::FloatRect defaultHitboxRaw{0.f, 0.f, 0.f, 0.f};
     std::unordered_map<AnimationState, sf::FloatRect> animationHitboxesRaw;
+    // Sprite visual offset per animation (for rendering only, doesn't affect position/collision)
+    sf::Vector2f currentSpriteOffset{0.f, 0.f};
+    std::unordered_map<AnimationState, sf::Vector2f> animationSpriteOffsetsRaw;
 
 public:
     GameCharacter(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture);
@@ -125,12 +162,14 @@ public:
     void setAnimationTexture(AnimationState state, std::shared_ptr<sf::Texture> texture, int frameCount, int frameWidth, int frameHeight, float fps);
     void setAnimationState(AnimationState newState);
     void setAnimationHitbox(AnimationState state, float offsetX, float offsetY, float width, float height);
+    void setAnimationSpriteOffset(AnimationState state, float offsetX, float offsetY);
     virtual void draw(sf::RenderWindow &window);
     void setAnimationParams(int frameCount, int frameWidth, int frameHeight, float fps);
 
     // Combat
 
     void attack(Direction dir, std::vector<GameCharacter *> targets);
+    void attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type);
 
     // Gestion des stats
 
@@ -151,4 +190,9 @@ public:
     std::array<bool, 4> getContacts() const;
     std::string getName() const;
     bool isCanDash() const;
+    bool hasAttackHitbox() const;
+    sf::FloatRect getAttackHitbox() const;
+    // Attack type configuration
+    void setAttackTypeParams(AttackType type, float range, float topOffset, float height, int damage, float delay);
+    GameCharacter::AttackData getAttackTypeParams(AttackType type) const;
 };
