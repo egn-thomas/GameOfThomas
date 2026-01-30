@@ -18,7 +18,8 @@ enum class AnimationState
 
 enum class AttackType
 {
-    SwordAttack
+    SwordAttack,
+    CandleAttack
 };
 class GameCharacter
 {
@@ -28,6 +29,8 @@ private:
     int maxHp;
     int mana;
     int maxMana;
+    int endurance;
+    int maxEndurance;
     int level;
     float speed;
 
@@ -72,7 +75,7 @@ private:
     // Attack
 
     float attackCooldown;                 // Temps restant avant la prochaine attaque
-    const float attackCooldownMax = 0.5f; // Durée du cooldown en secondes
+    const float attackCooldownMax = 0.8f; // Durée du cooldown en secondes (temps avant de pouvoir attaquer à nouveau)
 
     bool isDamaged = false;
     float damageTimer = 0.f;
@@ -82,11 +85,17 @@ private:
     float stunTimer = 0.f;
     const float stunDuration = 0.5f; // Durée du stun
     
+    // Knockback timer - resets velocity.x when expired
+    float knockbackTimer = 0.f;
+    
     // Damage delay system
     struct PendingHit {
         GameCharacter* target;
         float delayTimer;
         int damage;
+        int attackDirection;      // +1 = right, -1 = left
+        float knockback;
+        float stunDuration;
     };
     std::vector<PendingHit> pendingHits;
     const float damageDelayDuration = 0.2f;
@@ -98,14 +107,18 @@ private:
 
     struct AttackData
     {
-        float range = 100.f;     // horizontal reach in pixels
-        float topOffset = 0.f;   // offset from character.position.y for attack box top
-        float height = 0.f;      // if 0 => use getBounds().height
+        float range = 100.f;        // horizontal reach in pixels
+        float topOffset = 0.f;      // offset from character.position.y for attack box top
+        float height = 0.f;         // if 0 => use getBounds().height
         int damage = 10;
-        float delay = 0.2f;      // delay before applying damage
+        float delay = 0.2f;         // delay before applying damage
+        float knockback = 0.f;      // knockback force (pixels/sec)
+        float stunDuration = 0.5f;  // stun duration in seconds
+        float reattackDelay = 0.f;    // extra delay before next attack can be made
     };
 
     std::unordered_map<AttackType, AttackData> attackTypes;
+
 protected:
     std::shared_ptr<sf::Texture> texture;
     bool onGround = false;
@@ -131,7 +144,7 @@ protected:
     std::unordered_map<AnimationState, sf::Vector2f> animationSpriteOffsetsRaw;
 
 public:
-    GameCharacter(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture);
+    GameCharacter(const std::string &name, int hp, int mana, int stamina, float speed, std::shared_ptr<sf::Texture> texture);
     virtual ~GameCharacter() = default;
 
     // Méthodes essentielles
@@ -186,6 +199,8 @@ public:
     int getMaxHp() const;
     int getMana() const;
     int getMaxMana() const;
+    int getEndurance() const;
+    int getMaxEndurance() const;
     sf::Vector2f getVelocity() const;
     std::array<bool, 4> getContacts() const;
     std::string getName() const;
@@ -193,6 +208,6 @@ public:
     bool hasAttackHitbox() const;
     sf::FloatRect getAttackHitbox() const;
     // Attack type configuration
-    void setAttackTypeParams(AttackType type, float range, float topOffset, float height, int damage, float delay);
+    void setAttackTypeParams(AttackType type, float range, float topOffset, float height, int damage, float delay, float knockback, float stunDuration);
     GameCharacter::AttackData getAttackTypeParams(AttackType type) const;
 };

@@ -10,6 +10,7 @@
 #include "factories/CharacterFactory.hpp"
 #include "events/EventManager.hpp"
 #include "ui/PauseMenu.hpp"
+#include "ui/UIManager.hpp"
 #include "DevMode.hpp"
 
 #include "./blocks/Block.hpp"
@@ -301,7 +302,10 @@ int main()
 
     EventManager eventManager(window);
     DevMode dev(true);
+    UIManager uiManager;
     sf::Clock clock;
+    
+    int levelCounter = 1;  // Track current level
     
     PauseMenu pauseMenu;
     bool showPauseMenu = false;
@@ -422,6 +426,7 @@ int main()
         {
             // Générer un nouveau niveau
             currentLevel = generateNewLevel(window);
+            levelCounter++;  // Increment level counter
             
             // Réinitialiser la liste allCharacters avec les nouveaux personnages
             allCharacters.clear();
@@ -520,8 +525,14 @@ int main()
             if (character->isAlive())
                 character->draw(window);
 
+        // Draw health bars above NPCs
+        uiManager.drawHealthBars(window, allCharacters, player.get());
+
+        // Draw player HUD (HP, Mana, Stamina, Level) at bottom-left
+        uiManager.drawPlayerHUD(window, *player, levelCounter);
+
         dev.drawInfo(window, *player, allCharacters);
-        dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
+        // dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
 
         // Afficher le menu de pause si actif
         if (showPauseMenu)

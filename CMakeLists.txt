@@ -15,6 +15,7 @@ add_executable(main
     src/events/EventManager.cpp
     src/events/MoveEvent.cpp
     src/ui/PauseMenu.cpp
+    src/ui/UIManager.cpp
     src/environnement/ModelGenerator.cpp
     src/environnement/Node.cpp
     src/environnement/Ground.cpp

@@ -1,4 +1,0 @@
-/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles/main.dir
-/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles/debug_maze.dir
-/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles/edit_cache.dir
-/home/thomas/Documents/GitHub/GameOfThomas/CMakeFiles/rebuild_cache.dir

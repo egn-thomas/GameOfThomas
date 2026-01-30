@@ -55,15 +55,25 @@ void EventManager::processEvents(Player &player, std::vector<GameCharacter *> al
 void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<GameCharacter *> allCharacters)
 {
     sf::Vector2f direction(0.f, 0.f);
+    static sf::Vector2f lastGroundDirection(0.f, 0.f);  // Tracker last direction when grounded
 
     // Réinitialiser le flag d'interaction
     interactPressed = false;
 
-    // Déplacemnts Standard
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-        direction.x -= 1.f;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        direction.x += 1.f;
+    // Déplacemnts Standard (seulement au sol - en l'air, garde son élan)
+    if (player.isOnGround() || player.isOnLadder())
+    {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+            direction.x -= 1.f;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+            direction.x += 1.f;
+        lastGroundDirection = direction;  // Save the direction when grounded
+    }
+    else
+    {
+        // En l'air: réappliquer la dernière direction au sol (force le mouvement)
+        direction = lastGroundDirection;
+    }
     // Jump when on ground
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && player.isOnGround() && !player.isOnLadder())
     {

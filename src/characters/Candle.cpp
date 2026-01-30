@@ -6,8 +6,8 @@
 /**
  * @brief Constructeur de Candle
  */
-Candle::Candle(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture)
-    : NonPlayer(name, hp, mana, speed, texture)
+Candle::Candle(const std::string &name, int hp, int mana, int stamina, float speed, std::shared_ptr<sf::Texture> texture)
+    : NonPlayer(name, hp, mana, stamina, speed, texture)
 {
     // Réduire la taille de 20% par rapport au scale par défaut (4.0 -> 3.2)
     sprite.setScale(3.2f, 3.2f);
@@ -37,6 +37,12 @@ void Candle::updateBehavior(float deltaTime, Player* player, const std::vector<s
     if (player == nullptr || !player->isAlive())
         return;
     
+    // Décrémenter le cooldown d'attaque
+    if (attackCooldown > 0.f)
+    {
+        attackCooldown -= deltaTime;
+    }
+    
     sf::Vector2f myPos = this->getPosition();
     sf::Vector2f playerPos = player->getPosition();
     
@@ -60,11 +66,17 @@ void Candle::updateBehavior(float deltaTime, Player* player, const std::vector<s
         // Appliquer la gravité et les collisions
         this->update(deltaTime, grounds);
         
-        // Vérifier si le joueur est assez proche pour attaquer
-        if (distance <= attackRange)
+        // Vérifier si le joueur est en portée d'attaque et si le cooldown est écoulé
+        if (distance <= attackRange && attackCooldown <= 0.f)
         {
-            // Logique d'attaque à implémenter plus tard
-            // std::cout << "Candle en portée d'attaque!" << std::endl;
+            // Déterminer la direction d'attaque (gauche ou droite)
+            Direction attackDirection = (direction.x < 0.f) ? Direction::Left : Direction::Right;
+            
+            // Effectuer l'attaque avec les paramètres définis
+            this->attack(attackDirection, {player}, AttackType::CandleAttack);
+            
+            // Réinitialiser le cooldown
+            attackCooldown = attackCooldownDuration;
         }
     }
     else

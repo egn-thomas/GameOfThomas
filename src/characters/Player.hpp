@@ -7,7 +7,7 @@ protected:
     const float jumpStrength = 500.f;
 public:
     // constructeur
-    Player(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture);
+    Player(const std::string &name, int hp, int mana, int stamina, float speed, std::shared_ptr<sf::Texture> texture);
 
     void jump();
 

@@ -42,8 +42,8 @@ std::vector<std::unique_ptr<Ground>> ExitBlock::buildGrounds(BlockType mask, int
     float tilesPositionX = tileSizeX * static_cast<float>(posx);
     float tilesPositionY = tileSizeY * static_cast<float>(posy);
 
-    const float floorThickness = 8.f;
-    const float wallThickness = 8.f;
+    const float floorThickness = 16.f;
+    const float wallThickness = 16.f;
     const float openingWidth = 96.f;
 
     // Floor: placed at bottom of tile. Skip floor if there's an exit downward
@@ -51,7 +51,7 @@ std::vector<std::unique_ptr<Ground>> ExitBlock::buildGrounds(BlockType mask, int
     float floorPosY = tilesPositionY + tileSizeY - floorThickness;
     if (!(mask & BOTTOM_EXIT))
     {
-        grounds.emplace_back(std::make_unique<TexturedGround>(floorPosX, floorPosY, tileSizeX, floorThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(floorPosX, floorPosY + 8, tileSizeX, floorThickness, *TexturedGround::getDefaultTexture()));
         std::cerr << "ExitBlock: tile(" << posx << "," << posy << ") floor at " << floorPosX << "," << floorPosY << " size " << tileSizeX << "," << floorThickness << "\n";
     }
     else
@@ -65,7 +65,7 @@ std::vector<std::unique_ptr<Ground>> ExitBlock::buildGrounds(BlockType mask, int
     {
         float x = tilesPositionX;
         float y = tilesPositionY;
-        grounds.emplace_back(std::make_unique<TexturedGround>(x, y, wallThickness, tileSizeY, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(x - 8, y, wallThickness, tileSizeY, *TexturedGround::getDefaultTexture()));
         std::cerr << "ExitBlock: tile(" << posx << "," << posy << ") left wall at " << x << "," << y << " size " << wallThickness << "," << tileSizeY << "\n";
     }
     else
@@ -78,7 +78,7 @@ std::vector<std::unique_ptr<Ground>> ExitBlock::buildGrounds(BlockType mask, int
     {
         float x = tilesPositionX + tileSizeX - wallThickness;
         float y = tilesPositionY;
-        grounds.emplace_back(std::make_unique<TexturedGround>(x, y, wallThickness, tileSizeY, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(x + 8, y, wallThickness, tileSizeY, *TexturedGround::getDefaultTexture()));
         std::cerr << "ExitBlock: tile(" << posx << "," << posy << ") right wall at " << x << "," << y << " size " << wallThickness << "," << tileSizeY << "\n";
     }
     else
@@ -91,15 +91,15 @@ std::vector<std::unique_ptr<Ground>> ExitBlock::buildGrounds(BlockType mask, int
     {
         float x = tilesPositionX;
         float y = tilesPositionY;
-        grounds.emplace_back(std::make_unique<TexturedGround>(x, y, tileSizeX, wallThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(x, y - 8, tileSizeX, wallThickness, *TexturedGround::getDefaultTexture()));
         std::cerr << "ExitBlock: tile(" << posx << "," << posy << ") top wall at " << x << "," << y << " size " << tileSizeX << "," << wallThickness << "\n";
     }
     else
     {
         // La sortie ne fait pas la largeur totale du mur, on laisse un peu de mur de chaque côté pour une ouverture de 100 pixels
         float sideWidth = (tileSizeX - openingWidth) / 2.f;
-        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX, tilesPositionY, sideWidth, wallThickness, *TexturedGround::getDefaultTexture()));
-        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX + sideWidth + openingWidth, tilesPositionY, sideWidth, wallThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX, tilesPositionY - 8, sideWidth, wallThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX + sideWidth + openingWidth, tilesPositionY - 8, sideWidth, wallThickness, *TexturedGround::getDefaultTexture()));
 
         // If there is a top exit, place a ladder centered in the opening
         float ladderX = tilesPositionX + sideWidth;
@@ -114,15 +114,15 @@ std::vector<std::unique_ptr<Ground>> ExitBlock::buildGrounds(BlockType mask, int
     {
         float x = tilesPositionX;
         float y = tilesPositionY + tileSizeY - wallThickness;
-        grounds.emplace_back(std::make_unique<TexturedGround>(x, y, tileSizeX, wallThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(x, y + 8, tileSizeX, wallThickness, *TexturedGround::getDefaultTexture()));
         std::cerr << "ExitBlock: tile(" << posx << "," << posy << ") bottom wall at " << x << "," << y << " size " << tileSizeX << "," << wallThickness << "\n";
     }
     else
     {
         // La sortie ne fait pas la largeur totale du mur, on laisse un peu de mur de chaque côté pour une ouverture de 100 pixels
         float sideWidthB = (tileSizeX - openingWidth) / 2.f;
-        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX, tilesPositionY + tileSizeY - wallThickness, sideWidthB, wallThickness, *TexturedGround::getDefaultTexture()));
-        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX + sideWidthB + openingWidth, tilesPositionY + tileSizeY - wallThickness, sideWidthB, wallThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX, tilesPositionY + tileSizeY - wallThickness + 8, sideWidthB, wallThickness, *TexturedGround::getDefaultTexture()));
+        grounds.emplace_back(std::make_unique<TexturedGround>(tilesPositionX + sideWidthB + openingWidth, tilesPositionY + tileSizeY - wallThickness + 8, sideWidthB, wallThickness, *TexturedGround::getDefaultTexture()));
         std::cerr << "ExitBlock: tile(" << posx << "," << posy << ") BOTTOM_EXIT (opening) skipped bottom wall\n";
     }
 

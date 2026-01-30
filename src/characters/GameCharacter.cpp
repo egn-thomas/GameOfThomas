@@ -14,9 +14,9 @@
  *
  * @note Par défaut, le personnage est placé à (0, 0)
  */
-GameCharacter::GameCharacter(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture)
+GameCharacter::GameCharacter(const std::string &name, int hp, int mana, int stamina, float speed, std::shared_ptr<sf::Texture> texture)
     : name(name), hp(hp), maxHp(hp), mana(mana), maxMana(mana),
-      speed(speed), position(0.f, 0.f), velocity(0.f, 0.f),
+      endurance(stamina), maxEndurance(stamina),speed(speed), position(0.f, 0.f), velocity(0.f, 0.f),
       texture(std::move(texture)), previousPosition(0.f, 0.f)
 {
     sprite.setTexture(*this->texture);
@@ -54,8 +54,6 @@ void GameCharacter::update(float deltaTime, const std::vector<std::unique_ptr<Gr
 
     // Cooldowns
     allCooldowns(deltaTime);
-    if (attackCooldown > 0.f)
-        attackCooldown -= deltaTime;
 }
 
 //--------------------------------------------------------------------------------------
@@ -111,6 +109,9 @@ void GameCharacter::applyGravity(float deltaTime)
  */
 void GameCharacter::move(const sf::Vector2f &offset)
 {
+    // Do not allow movement while stunned
+    if (isStunned)
+        return;
     position += offset;
     sprite.setPosition(position);
 }
@@ -120,6 +121,10 @@ void GameCharacter::move(const sf::Vector2f &offset)
  */
 void GameCharacter::startDash(int direction)
 {
+    // cannot dash while stunned
+    if (isStunned)
+        return;
+
     if (canDash && !isDashing && dashCooldown <= 0.f)
     {
         dashCooldown = dashCooldownMax;
@@ -328,6 +333,8 @@ void GameCharacter::selfAnimator(float deltaTime)
  */
 void GameCharacter::walkAnimator(float deltaTime)
 {
+    if (isStunned)
+        return;
     // Ne pas modifier l'animation si on est en train d'attaquer
     if (currentState == AnimationState::AttackLeft || currentState == AnimationState::AttackRight)
         return;
@@ -502,6 +509,10 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets)
 
 void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type)
 {
+    // cannot attack while stunned
+    if (isStunned)
+        return;
+
     if (attackCooldown > 0.f)
         return;
     // look up attack type parameters (fallback to defaults if not set)
@@ -515,6 +526,9 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, 
     float attackHeight = (data.height > 0.f) ? data.height : getBounds().height;
     int damage = data.damage;
     float delay = data.delay;
+    float knockback = data.knockback;
+    float stunDuration = data.stunDuration;
+    int attackDirection = (dir == Direction::Right) ? 1 : -1;
 
     attackAnimator(0.f, dir);
 
@@ -537,8 +551,8 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, 
 
         if (attackBox.intersects(target->getBounds()))
         {
-            // Ajouter un hit en attente avec délai de 'delay'
-            pendingHits.push_back({target, delay, damage});
+            // Ajouter un hit en attente avec délai, knockback et stun
+            pendingHits.push_back({target, delay, damage, attackDirection, knockback, stunDuration});
             std::cout << "Pending hit queued for " << target->getName() << " in " << delay << "s" << std::endl;
         }
     }
@@ -563,6 +577,9 @@ void GameCharacter::takeDamage(int dmg)
         hp = 0;
     isDamaged = true;
     damageTimer = 0.5f;
+    // apply stun
+    isStunned = true;
+    stunTimer = stunDuration;
     sprite.setColor(sf::Color(255, 100, 100));
 }
 
@@ -598,6 +615,17 @@ void GameCharacter::allCooldowns(float deltaTime)
             if (it->target)
             {
                 it->target->takeDamage(it->damage);
+                // Apply knockback
+                if (it->knockback > 0.f)
+                {
+                    it->target->velocity.x = it->attackDirection * it->knockback;
+                    it->target->knockbackTimer = it->stunDuration; // knockback lasts as long as stun
+                }
+                // Override stun duration with attack's stun duration if greater
+                if (it->stunDuration > it->target->stunTimer)
+                {
+                    it->target->stunTimer = it->stunDuration;
+                }
             }
             it = pendingHits.erase(it);
         }
@@ -622,6 +650,16 @@ void GameCharacter::allCooldowns(float deltaTime)
         dashCooldown -= deltaTime;
     if (attackCooldown > 0.f)
         attackCooldown -= deltaTime;
+
+    // Knockback timer - reset horizontal velocity when knockback expires
+    if (knockbackTimer > 0.f)
+    {
+        knockbackTimer -= deltaTime;
+        if (knockbackTimer <= 0.f)
+        {
+            velocity.x = 0.f; // stop knockback movement
+        }
+    }
 
     // Stun
     if (stunTimer > 0.f)
@@ -706,6 +744,22 @@ int GameCharacter::getMaxMana() const
 }
 
 /**
+ * @return Retourne l'endurance actuelle du personnage
+ */
+int GameCharacter::getEndurance() const
+{
+    return endurance;
+}
+
+/**
+ * @return Retourne l'endurance maximale du personnage
+ */
+int GameCharacter::getMaxEndurance() const
+{
+    return maxEndurance;
+}
+
+/**
  * @return Retourne la vitesse actuelle (velocity) du personnage sous forme de vecteur 2D
  */
 sf::Vector2f GameCharacter::getVelocity() const
@@ -754,7 +808,7 @@ sf::FloatRect GameCharacter::getAttackHitbox() const
     return lastAttackBox;
 }
 
-void GameCharacter::setAttackTypeParams(AttackType type, float range, float topOffset, float height, int damage, float delay)
+void GameCharacter::setAttackTypeParams(AttackType type, float range, float topOffset, float height, int damage, float delay, float knockback, float stunDuration)
 {
     AttackData d;
     d.range = range;
@@ -762,6 +816,8 @@ void GameCharacter::setAttackTypeParams(AttackType type, float range, float topO
     d.height = height;
     d.damage = damage;
     d.delay = delay;
+    d.knockback = knockback;
+    d.stunDuration = stunDuration;
     attackTypes[type] = d;
 }
 

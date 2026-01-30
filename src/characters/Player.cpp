@@ -3,8 +3,8 @@
 /**
  * @brief Constructeur de la classe Player.
  */
-Player::Player(const std::string &name, int hp, int mana, float speed, std::shared_ptr<sf::Texture> texture)
-    : GameCharacter(name, hp, mana, speed, texture)
+Player::Player(const std::string &name, int hp, int mana, int stamina, float speed, std::shared_ptr<sf::Texture> texture)
+    : GameCharacter(name, hp, mana, stamina, speed, texture)
 {
     sprite.setScale(3.f, 3.f);
 }
