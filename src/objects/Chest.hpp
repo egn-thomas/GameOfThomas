@@ -1,6 +1,9 @@
 #pragma once
 #include "Object.hpp"
 #include <memory>
+#include <vector>
+
+class Item;
 
 /**
  * @brief Classe représentant un coffre
@@ -35,6 +38,13 @@ public:
      * @brief Définit la texture du coffre
      */
     void setTexture(bool opened);
+
+    /**
+     * @brief Génère le contenu du coffre en fonction du niveau de jeu.
+     * @param level Le niveau de jeu actuel (1...N)
+     * @return Vecteur d'items que contient ce coffre
+     */
+    std::vector<std::unique_ptr<Item>> generateLoot(int level) const;
 
     /**
      * @brief Vérifie si le joueur est sur le coffre

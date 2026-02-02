@@ -1,7 +1,9 @@
+#include "InventoryMenu.hpp"
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <memory>
+#include <string>
 
 class GameCharacter;
 
@@ -9,6 +11,10 @@ class UIManager
 {
 public:
     UIManager();
+
+    // Inventaire
+    void drawInventoryMenu(sf::RenderWindow& window, const GameCharacter& character);
+    InventoryMenu& getInventoryMenu();
 
     /**
      * @brief Dessine les barres de vie pour tous les personnages (sauf le joueur)
@@ -40,9 +46,25 @@ public:
      */
     void drawPlayerHUD(sf::RenderWindow& window, const GameCharacter& player, int currentLevel);
 
+    // --- Notifications éphémères ---
+    // Ajoute une notification à afficher (droite de l'écran)
+    void addNotification(const std::string &text, float duration = 3.f);
+    // Met à jour le timer des notifications (à appeler chaque frame)
+    void updateNotifications(float deltaTime);
+    // Dessine les notifications à l'écran (vue par défaut)
+    void drawNotifications(sf::RenderWindow& window);
+
 private:
     sf::Font font;
     bool fontLoaded = false;
+
+    InventoryMenu inventoryMenu;
+
+    // Structure interne pour les notifications
+    struct Notification { std::string text; float ttl; };
+    std::vector<Notification> notifications;
+    static constexpr float notificationWidth = 500.f;
+    static constexpr float notificationMargin = 20.f;
 
     // Paramètres des barres de vie des ennemis (petites)
     static constexpr float barWidth = 40.f;

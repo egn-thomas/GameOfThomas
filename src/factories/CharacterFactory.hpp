@@ -2,6 +2,10 @@
 #include <SFML/Graphics.hpp>
 #include "../characters/Player.hpp"
 #include "../characters/Candle.hpp"
+#include "../items/HealthPotion.hpp"
+#include "../items/ManaPotion.hpp"
+#include "../items/HealthAmulet.hpp"
+#include "../items/DamageAmulet.hpp"
 #include <vector>
 #include <memory>
 

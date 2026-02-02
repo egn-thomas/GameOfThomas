@@ -12,6 +12,10 @@
 #include "ui/PauseMenu.hpp"
 #include "ui/UIManager.hpp"
 #include "DevMode.hpp"
+#include "items/HealthPotion.hpp"
+#include "items/Item.hpp"
+#include "items/HealthPotion.hpp"
+#include "ui/InventoryMenu.hpp"
 
 #include "./blocks/Block.hpp"
 #include "./factories/BlockFactory.hpp"
@@ -67,6 +71,9 @@ GameLevel generateNewLevel(sf::RenderWindow& window)
     return level;
 }
 
+// Pour accès global à l'UIManager dans EventManager
+UIManager* gUIManager = nullptr;
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Game of Thomas", sf::Style::Fullscreen);
@@ -111,6 +118,12 @@ int main()
     // Création des entités via les factories
     //---------------------------------
     auto player = CharacterFactory::createPlayer(window.getSize());
+    // Ajout d'exemples de potions dans l'inventaire du joueur
+    if (player) {
+        player->addItem(std::make_unique<HealthPotion>(20));
+        player->addItem(std::make_unique<HealthPotion>(20));
+        player->addItem(std::make_unique<HealthPotion>(50));
+    }
     auto npcs = CharacterFactory::createNonPlayer(window.getSize(), {2.5f, 2.f});
 
     // Générer le premier niveau
@@ -303,6 +316,9 @@ int main()
     EventManager eventManager(window);
     DevMode dev(true);
     UIManager uiManager;
+    // Register UI manager with event manager
+    eventManager.setUIManager(&uiManager);
+    gUIManager = &uiManager;
     sf::Clock clock;
     
     int levelCounter = 1;  // Track current level
@@ -321,6 +337,7 @@ int main()
     while (window.isOpen())
     {
         float deltaTime = clock.restart().asSeconds();
+        uiManager.updateNotifications(deltaTime);
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -367,7 +384,7 @@ int main()
         }
 
         // Synchroniser l'état de pause avec EventManager
-        if (eventManager.isPaused())
+        if (eventManager.isPaused() && !eventManager.isInventoryOpen())
         {
             if (!showPauseMenu)
             {
@@ -404,7 +421,35 @@ int main()
         // Ouvrir le coffre si E est pressé
         if (eventManager.isInteractPressed() && currentChestNearby != nullptr)
         {
-            currentChestNearby->open();
+            if (!currentChestNearby->getIsOpened())
+            {
+                currentChestNearby->open();
+                auto loot = currentChestNearby->generateLoot(levelCounter);
+                std::vector<std::string> obtained;
+                for (auto &itemPtr : loot)
+                {
+                    std::string name = itemPtr->getName();
+                    if (player->addItem(std::move(itemPtr)))
+                    {
+                        obtained.push_back(name);
+                    }
+                    else
+                    {
+                        uiManager.addNotification(std::string("Inventaire plein: ") + name, 4.f);
+                    }
+                }
+
+                if (!obtained.empty())
+                {
+                    std::string msg = "Vous avez trouvé: ";
+                    for (size_t i = 0; i < obtained.size(); ++i)
+                    {
+                        if (i) msg += ", ";
+                        msg += obtained[i];
+                    }
+                    uiManager.addNotification(msg, 4.f);
+                }
+            }
         }
 
         // Détection des portes proches du joueur
@@ -530,9 +575,20 @@ int main()
 
         // Draw player HUD (HP, Mana, Stamina, Level) at bottom-left
         uiManager.drawPlayerHUD(window, *player, levelCounter);
+        // Draw ephemeral notifications (right side)
+        uiManager.drawNotifications(window);
 
         dev.drawInfo(window, *player, allCharacters);
-        // dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
+        dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
+
+        // Si l'inventaire est ouvert, l'afficher (vue par défaut)
+        if (eventManager.isInventoryOpen())
+        {
+            sf::View currentView = window.getView();
+            window.setView(window.getDefaultView());
+            uiManager.drawInventoryMenu(window, *player);
+            window.setView(currentView);
+        }
 
         // Afficher le menu de pause si actif
         if (showPauseMenu)

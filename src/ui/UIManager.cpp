@@ -28,6 +28,16 @@ UIManager::UIManager()
     {
         std::cerr << "Failed to load font for UIManager (tried " << fontPaths.size() << " paths)" << std::endl;
     }
+
+    // Initialiser le menu d'inventaire
+    inventoryMenu = InventoryMenu();
+}
+void UIManager::drawInventoryMenu(sf::RenderWindow& window, const GameCharacter& character) {
+    inventoryMenu.draw(window, character);
+}
+
+InventoryMenu& UIManager::getInventoryMenu() {
+    return inventoryMenu;
 }
 
 void UIManager::drawHealthBars(sf::RenderWindow& window, const std::vector<GameCharacter*>& allCharacters, GameCharacter* playerPtr)

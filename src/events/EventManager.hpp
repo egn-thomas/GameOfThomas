@@ -8,6 +8,8 @@
 
 class GameCharacter;
 
+class UIManager; // forward
+
 class EventManager {
 public:
     explicit EventManager(sf::RenderWindow& win);
@@ -18,12 +20,24 @@ public:
     void setPaused(bool state) { paused = state; }
     bool isInteractPressed() const { return interactPressed; }
 
+    // Inventaire
+    void setUIManager(UIManager* ui) { uiManager = ui; }
+    bool isInventoryOpen() const { return inventoryOpen; }
+
 private:
     sf::RenderWindow& window;
     std::vector<std::unique_ptr<Event>> eventQueue;
     bool showMapView = false;
     bool paused = false;
     bool interactPressed = false;
+
+    // Inventory state
+    UIManager* uiManager = nullptr;
+    bool inventoryOpen = false;
+    bool iKeyPressed = false;
+    bool leftPressed = false;
+    bool rightPressed = false;
+    bool enterPressed = false;
     
     void handleKeyboard(Player& player, float deltaTime,  std::vector<GameCharacter *> allCharacters);
 };

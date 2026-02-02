@@ -524,7 +524,7 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, 
     float attackRange = data.range;
     float attackTop = position.y + data.topOffset;
     float attackHeight = (data.height > 0.f) ? data.height : getBounds().height;
-    int damage = data.damage;
+    int damage = data.damage + damageBonus;
     float delay = data.delay;
     float knockback = data.knockback;
     float stunDuration = data.stunDuration;
@@ -680,9 +680,36 @@ void GameCharacter::allCooldowns(float deltaTime)
     }
 }
 
+//------------------------------------------------------------------------------
+// Stat modifiers used by items
+//------------------------------------------------------------------------------
+
+void GameCharacter::restoreMana(int amount)
+{
+    mana += amount;
+    if (mana > maxMana) mana = maxMana;
+}
+
+void GameCharacter::increaseMaxHp(int amount)
+{
+    maxHp += amount;
+    hp += amount; // also give current hp
+}
+
+void GameCharacter::addDamageBonus(int amount)
+{
+    damageBonus += amount;
+}
 //--------------------------------------------------------------------------------------
 //                          Getters & Setters
 //--------------------------------------------------------------------------------------
+
+void GameCharacter::heal(int amount)
+{
+    hp += amount;
+    if (hp > maxHp)
+        hp = maxHp;
+}
 
 /**
  * @brief Place le personnage à la position passée en paramètres
@@ -827,4 +854,47 @@ GameCharacter::AttackData GameCharacter::getAttackTypeParams(AttackType type) co
     if (it != attackTypes.end())
         return it->second;
     return AttackData();
+}
+
+// Ajoute un item à l'inventaire (empile si même type, sinon nouvelle pile)
+bool GameCharacter::addItem(std::unique_ptr<Item> item) {
+    std::string typeName = item->getName();
+    // Chercher une pile du même type
+    for (auto& stack : inventory) {
+        if (!stack.stack.empty() && stack.itemTypeName == typeName) {
+            stack.stack.push(std::move(item));
+            return true;
+        }
+    }
+    // Chercher une pile vide
+    for (auto& stack : inventory) {
+        if (stack.stack.empty()) {
+            stack.itemTypeName = typeName;
+            stack.stack.push(std::move(item));
+            return true;
+        }
+    }
+    // Inventaire plein
+    return false;
+}
+
+// Utilise l'item au sommet de la pile du slot (et le retire)
+bool GameCharacter::useItem(int slot) {
+    if (slot < 0 || slot >= INVENTORY_SIZE) return false;
+    auto& stack = inventory[slot];
+    if (stack.stack.empty()) return false;
+    stack.stack.top()->applyEffect(*this);
+    stack.stack.pop();
+    if (stack.stack.empty()) stack.itemTypeName = "";
+    return true;
+}
+
+// Retire l'item au sommet de la pile du slot (sans effet)
+bool GameCharacter::removeItem(int slot) {
+    if (slot < 0 || slot >= INVENTORY_SIZE) return false;
+    auto& stack = inventory[slot];
+    if (stack.stack.empty()) return false;
+    stack.stack.pop();
+    if (stack.stack.empty()) stack.itemTypeName = "";
+    return true;
 }

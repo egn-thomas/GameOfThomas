@@ -72,6 +72,11 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
 
     player->setAttackTypeParams(AttackType::SwordAttack, 180.f, 60.f, 19.f, 10, 0.3f, 1000.f, 0.1f);
 
+    player->addItem(std::make_unique<HealthPotion>(25));
+    player->addItem(std::make_unique<ManaPotion>(15));
+    player->addItem(std::make_unique<HealthAmulet>(20));
+    player->addItem(std::make_unique<DamageAmulet>(5));
+
     return player;
 }
 

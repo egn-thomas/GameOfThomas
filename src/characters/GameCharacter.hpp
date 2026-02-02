@@ -6,6 +6,9 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <stack>
+#include <array>
+#include "../items/Item.hpp"
 
 enum class AnimationState
 {
@@ -33,6 +36,17 @@ private:
     int maxEndurance;
     int level;
     float speed;
+
+    // Item-based bonuses
+    int damageBonus = 0; // added by DamageAmulet
+
+    // Inventaire : 10 piles d'items (empilables)
+    static constexpr int INVENTORY_SIZE = 10;
+    struct ItemStack {
+        std::stack<std::unique_ptr<Item>> stack;
+        std::string itemTypeName; // Pour l'affichage/type
+    };
+    std::array<ItemStack, INVENTORY_SIZE> inventory{};
 
     sf::Vector2f position;
     sf::Vector2f previousPosition;
@@ -147,9 +161,18 @@ public:
     GameCharacter(const std::string &name, int hp, int mana, int stamina, float speed, std::shared_ptr<sf::Texture> texture);
     virtual ~GameCharacter() = default;
 
+    // Gestion de l'inventaire
+    bool addItem(std::unique_ptr<Item> item); // Ajoute un item (empile si même type, sinon nouvelle pile)
+    bool useItem(int slot); // Utilise l'item au sommet de la pile du slot
+    bool removeItem(int slot); // Retire l'item au sommet de la pile du slot
+    const std::array<ItemStack, INVENTORY_SIZE>& getInventory() const { return inventory; }
+
     // Méthodes essentielles
 
     void update(float deltaTime, const std::vector<std::unique_ptr<Ground>> &grounds);
+
+    // Ajoute des points de vie (sans dépasser le max)
+    void heal(int amount);
 
     // Position et mouvement
 
@@ -189,6 +212,11 @@ public:
     void takeDamage(int dmg);
     bool isAlive() const;
     void allCooldowns(float deltaTime);
+
+    // Stat modifiers (used by items)
+    void restoreMana(int amount);
+    void increaseMaxHp(int amount);
+    void addDamageBonus(int amount);
 
     // Getters
     float getSpeed() const;

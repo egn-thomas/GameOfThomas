@@ -18,6 +18,8 @@ EventManager::EventManager(sf::RenderWindow &win)
  * @param player Le joueur principal.
  * @param allCharacters Tous les personnages du jeu (joueur et PNJ).
  */
+#include "../ui/UIManager.hpp"
+
 void EventManager::processEvents(Player &player, std::vector<GameCharacter *> allCharacters)
 {
     sf::Event event;
@@ -25,9 +27,39 @@ void EventManager::processEvents(Player &player, std::vector<GameCharacter *> al
     {
         if (event.type == sf::Event::Closed)
             window.close();
-        
-        // Note: Échap est maintenant détecté dans main.cpp avant que les événements
-        // n'arrivent à EventManager, car les événements sont consommés par window.pollEvent()
+    }
+
+    // Gestion de l'ouverture/fermeture de l'inventaire
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::I)) {
+        if (!iKeyPressed) {
+            inventoryOpen = !inventoryOpen;
+            iKeyPressed = true;
+            if (inventoryOpen) paused = true;
+            else paused = false;
+        }
+    } else {
+        iKeyPressed = false;
+    }
+
+    if (inventoryOpen) {
+        // Navigation dans l'inventaire via UIManager
+        if (uiManager) {
+            InventoryMenu& invMenu = uiManager->getInventoryMenu();
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+                if (!leftPressed) { invMenu.moveSelection(-1); leftPressed = true; }
+            } else leftPressed = false;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+                if (!rightPressed) { invMenu.moveSelection(1); rightPressed = true; }
+            } else rightPressed = false;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+                if (!enterPressed) {
+                    player.useItem(invMenu.getSelectedSlot());
+                    enterPressed = true;
+                }
+            } else enterPressed = false;
+        }
+        // When inventory is open, skip other game inputs
+        return;
     }
 
     // Ne traiter les événements du jeu que si pas en pause
