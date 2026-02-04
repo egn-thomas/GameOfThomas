@@ -20,6 +20,9 @@ GameCharacter::GameCharacter(const std::string &name, int hp, int mana, int stam
       endurance(stamina), maxEndurance(stamina),speed(speed), position(0.f, 0.f), velocity(0.f, 0.f),
       texture(std::move(texture)), previousPosition(0.f, 0.f)
 {
+    if (!flashShader.loadFromMemory(FlashShaderCode, sf::Shader::Fragment)) {
+        std::cerr << "Failed to load flash shader from memory!" << std::endl;
+    }
     sprite.setTexture(*this->texture);
     sprite.setPosition(position);
 
@@ -553,7 +556,15 @@ void GameCharacter::draw(sf::RenderWindow &window)
     // Apply sprite offset for rendering
     sf::Vector2f originalPos = sprite.getPosition();
     sprite.setPosition(originalPos + currentSpriteOffset);
-    window.draw(sprite);
+    // If damaged, use flash shader
+    if (isDamaged && damageTimer > 0.f)
+    {
+        window.draw(sprite, &flashShader);
+    }
+    else
+    {
+        window.draw(sprite);
+    }
     sprite.setPosition(originalPos);
 }
 
@@ -644,7 +655,7 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, 
     attackBox.width = attackRange;
     attackBox.height = attackHeight;
 
-    // Vérifier collision avec tous les cibles et ajouter à la liste des hits en attente
+    // Vérifier collision avec la cible et créer une attaque en attente
     for (auto target : targets)
     {
         if (target == this)
@@ -652,9 +663,10 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, 
 
         if (attackBox.intersects(target->getBounds()))
         {
-            // Ajouter un hit en attente avec délai, knockback et stun
-            pendingHits.push_back({target, delay, damage, attackDirection, knockback, stunDuration});
-            std::cout << "Pending hit queued for " << target->getName() << " in " << delay << "s" << std::endl;
+            // Créer une attaque en attente avec délai
+            pendingAttack = {target, delay, damage, attackDirection, knockback, stunDuration, true};
+            // std::cout << "Attack queued for " << target->getName() << " in " << delay << "s" << std::endl;
+            break; // Une seule attaque à la fois
         }
     }
 
@@ -681,7 +693,7 @@ void GameCharacter::takeDamage(int dmg)
     // apply stun
     isStunned = true;
     stunTimer = stunDuration;
-    sprite.setColor(sf::Color(255, 100, 100));
+    // sprite color will be updated in update() based on damageTimer
     
     // Trigger camera shake on damage
     if (cameraShake != nullptr)
@@ -738,32 +750,43 @@ bool GameCharacter::isAlive() const
  */
 void GameCharacter::allCooldowns(float deltaTime)
 {
-    // Process pending delayed hits
-    for (auto it = pendingHits.begin(); it != pendingHits.end(); )
+    // Process pending delayed attack
+    if (pendingAttack.isActive)
     {
-        it->delayTimer -= deltaTime;
-        if (it->delayTimer <= 0.f)
+        pendingAttack.delayTimer -= deltaTime;
+        if (pendingAttack.delayTimer <= 0.f)
         {
-            if (it->target)
+            if (pendingAttack.target)
             {
-                it->target->takeDamage(it->damage);
-                // Apply knockback
-                if (it->knockback > 0.f)
+                // Vérifier que la cible est toujours à proximité avant d'appliquer les dégâts
+                sf::FloatRect attackBox;
+                float range = 100.f; // Default range
+                if (pendingAttack.attackDirection == 1)
+                    attackBox.left = position.x + getBounds().width;
+                else
+                    attackBox.left = position.x - range;
+                
+                attackBox.top = position.y;
+                attackBox.width = range;
+                attackBox.height = getBounds().height;
+
+                if (attackBox.intersects(pendingAttack.target->getBounds()))
                 {
-                    it->target->velocity.x = it->attackDirection * it->knockback;
-                    it->target->knockbackTimer = it->stunDuration; // knockback lasts as long as stun
-                }
-                // Override stun duration with attack's stun duration if greater
-                if (it->stunDuration > it->target->stunTimer)
-                {
-                    it->target->stunTimer = it->stunDuration;
+                    pendingAttack.target->takeDamage(pendingAttack.damage);
+                    // Apply knockback
+                    if (pendingAttack.knockback > 0.f)
+                    {
+                        pendingAttack.target->velocity.x = pendingAttack.attackDirection * pendingAttack.knockback;
+                        pendingAttack.target->knockbackTimer = pendingAttack.stunDuration;
+                    }
+                    // Override stun duration with attack's stun duration if greater
+                    if (pendingAttack.stunDuration > pendingAttack.target->stunTimer)
+                    {
+                        pendingAttack.target->stunTimer = pendingAttack.stunDuration;
+                    }
                 }
             }
-            it = pendingHits.erase(it);
-        }
-        else
-        {
-            ++it;
+            pendingAttack.isActive = false;
         }
     }
 
@@ -807,6 +830,8 @@ void GameCharacter::allCooldowns(float deltaTime)
     if (damageTimer > 0.f)
     {
         damageTimer -= deltaTime;
+        float alpha = (static_cast<int>(damageTimer * 15.f) % 2 == 0) ? 1.0f : 0.0f;
+        flashShader.setUniform("flashAlpha", alpha);
     }
     else
     {

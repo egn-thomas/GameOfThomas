@@ -103,17 +103,18 @@ private:
     // Knockback timer - resets velocity.x when expired
     float knockbackTimer = 0.f;
     
-    // Damage delay system
-    struct PendingHit {
+    // Damage delay system - stores a single pending attack
+    struct PendingAttack {
         GameCharacter* target;
         float delayTimer;
         int damage;
         int attackDirection;      // +1 = right, -1 = left
         float knockback;
         float stunDuration;
+        bool isActive = false;
     };
-    std::vector<PendingHit> pendingHits;
-    const float damageDelayDuration = 0.2f;
+    PendingAttack pendingAttack;
+    
     // Last computed attack box for debug/visualization
     sf::FloatRect lastAttackBox{0.f,0.f,0.f,0.f};
     bool hasAttackBox = false;
@@ -123,7 +124,7 @@ private:
 
 
     float attackBoxTimer = 0.f;
-    const float attackBoxDuration = damageDelayDuration; // show attack box for same delay
+    const float attackBoxDuration = 0.2f; // show attack box for same duration as delay
 
     struct AttackData
     {
@@ -139,7 +140,7 @@ private:
         float heightLeft = 0.f;     // height for left-side hitbox (0 => same logic as right)
 
         int damage = 10;
-        float delay = 0.2f;         // delay before applying damage
+        float delay = 0.f;         // delay before applying damage
         float knockback = 0.f;      // knockback force (pixels/sec)
         float stunDuration = 0.5f;  // stun duration in seconds
         float reattackDelay = 0.f;  // extra delay before next attack can be made
@@ -149,6 +150,21 @@ private:
 
 
 protected:
+
+    const char* FlashShaderCode = R"(
+    uniform sampler2D texture;
+    uniform float flashAlpha;
+
+    void main() {
+        vec4 pixel = texture2D(texture, gl_TexCoord[0].xy);
+        // On mélange la couleur originale avec du blanc pur (1.0, 1.0, 1.0)
+        // en fonction de flashAlpha (0.0 = normal, 1.0 = tout blanc)
+        gl_FragColor = vec4(mix(pixel.rgb, vec3(1.0, 1.0, 1.0), flashAlpha), pixel.a);
+    }
+    )";
+
+    sf::Shader flashShader;
+
     float attackCooldown;                 // Temps restant avant la prochaine attaque (accessible aux sous-classes)
     float minAttackCooldown = 0.05f;      // Minimum cooldown when stamina is used (can be overridden by Player)
 
