@@ -44,7 +44,7 @@ void DevMode::drawInfo(sf::RenderWindow &window, const GameCharacter &player, st
     ss << "HP: " << player.getHp() << " / " << player.getMaxHp() << "\n";
     ss << "Mana: " << player.getMana() << " / " << player.getMaxMana() << "\n";
     for (auto character : allCharacters) {
-        ss << character->getName() << " : " << character->getHp() << "\n";
+        ss << character->getName() << " : " << character->getHp() << " (force=" << character->getForce() << ")\n";
     }    
 
     if (fontLoaded)

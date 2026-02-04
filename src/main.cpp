@@ -508,6 +508,20 @@ int main()
                                [](GameCharacter *c)
                                { return !c->isAlive() && dynamic_cast<NonPlayer *>(c); }),
                 allCharacters.end());
+
+            // Character-vs-character collisions: stronger pushes weaker; equal strength -> no movement
+            for (size_t i = 0; i < allCharacters.size(); ++i)
+            {
+                for (size_t j = i + 1; j < allCharacters.size(); ++j)
+                {
+                    GameCharacter *a = allCharacters[i];
+                    GameCharacter *b = allCharacters[j];
+                    if (a->isAlive() && b->isAlive())
+                    {
+                        a->resolveCollisionWithCharacter(*b);
+                    }
+                }
+            }
             
             // Update camera to follow player or show full map
             if (eventManager.isMapViewActive())
@@ -578,8 +592,9 @@ int main()
         // Draw ephemeral notifications (right side)
         uiManager.drawNotifications(window);
 
-        dev.drawInfo(window, *player, allCharacters);
-        dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
+        // dev.drawInfo(window, *player, allCharacters);
+        
+        // dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
 
         // Si l'inventaire est ouvert, l'afficher (vue par défaut)
         if (eventManager.isInventoryOpen())

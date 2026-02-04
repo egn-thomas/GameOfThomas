@@ -45,7 +45,8 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
         textureWalkRight->create(32, 32);
     }
 
-    auto player = std::make_unique<Player>("Player", 100, 50, 100, 250.f, textureIdle);
+    /* Nom, Hp, mana, stamina, speed, texture*/
+    auto player = std::make_unique<Player>("Player", 100, 50, 100, 300.f, textureIdle);
 
     player->setAnimationTexture(AnimationState::Idle, textureIdle, 2, 32, 32, 4.f);
     player->setAnimationHitbox(AnimationState::Idle, 10.f, 13.f, 12.f, 19.f);
@@ -67,15 +68,25 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
     // default hitbox (will be used unless a per-animation hitbox is set)
 
     player->setHitbox(10.f, 13.f, 12.f, 19.f);
-    // Configure attack type params (SwordAttack)
-    // range, topOffset, height, damage, delay, knockback, stunDuration
 
-    player->setAttackTypeParams(AttackType::SwordAttack, 180.f, 60.f, 19.f, 10, 0.3f, 1000.f, 0.1f);
+    // Configure attack type params (SwordAttack)
+    // Right side longer reach, left side slightly shorter to be asymmetric
+    // Params: rangeRight, topOffsetRight, heightRight,
+    //         rangeLeft, topOffsetLeft, heightLeft,
+    //         damage, delay, knockback, stunDuration
+
+    player->setAttackTypeParamsAsymmetric(AttackType::SwordAttack,
+                                         180.f, 60.f, 19.f,
+                                         100.f, 60.f, 19.f,
+                                         10, 0.3f, 1000.f, 0.1f);
 
     player->addItem(std::make_unique<HealthPotion>(25));
     player->addItem(std::make_unique<ManaPotion>(15));
     player->addItem(std::make_unique<HealthAmulet>(20));
     player->addItem(std::make_unique<DamageAmulet>(5));
+
+    // Set player's pushing force (higher than basic NPCs)
+    player->setForce(10);
 
     return player;
 }
@@ -100,21 +111,23 @@ std::vector<std::unique_ptr<NonPlayer>> CharacterFactory::createNonPlayer(
     }
 
     // Candle 1
-    auto candle1 = std::make_unique<Candle>("Candle1", 50, 10, 100, 150.f, pnjTexture);
+    auto candle1 = std::make_unique<Candle>("Pup", 50, 10, 100, 150.f, pnjTexture);
     candle1->setPosition(windowSize.x / 3.f, windowSize.y / 2.f);
     candle1->setAnimationParams(4, 32, 32, 6.f);
     candle1->setHitbox(3.f, 0.f, 26.f, 32.f);
     // Configure attack parameters for NPC (wide attack range, moderate damage)
-    candle1->setAttackTypeParams(AttackType::CandleAttack, 120.f, 20.f, 60.f, 10, 0.f, 1000.f, 0.2f);
+    candle1->setAttackTypeParams(AttackType::CandleAttack, 60.f, 20.f, 60.f, 10, 0.f, 1000.f, 0.2f);
+    candle1->setForce(6);
     npcs.push_back(std::move(candle1));
 
     // Candle 2
-    auto candle2 = std::make_unique<Candle>("Candle2", 60, 15, 100, 150.f, pnjTexture);
+    auto candle2 = std::make_unique<Candle>("Bob", 60, 15, 100, 150.f, pnjTexture);
     candle2->setPosition(windowSize.x / 2.f, windowSize.y / 1.8f);
     candle2->setAnimationParams(4, 32, 32, 6.f);
     candle2->setHitbox(3.f, 0.f, 26.f, 32.f);
     // Configure attack parameters for NPC
-    candle2->setAttackTypeParams(AttackType::CandleAttack, 120.f, 20.f, 60.f, 10, 0.f, 1000.f, 0.2f);
+    candle2->setAttackTypeParams(AttackType::CandleAttack, 60.f, 20.f, 60.f, 10, 0.f, 1000.f, 0.2f);
+    candle2->setForce(7);
     npcs.push_back(std::move(candle2));
 
     return npcs;
@@ -138,7 +151,8 @@ std::unique_ptr<Candle> CharacterFactory::createCandle(const sf::Vector2f &posit
     candle->setPosition(position.x, position.y);
     candle->setAnimationParams(4, 32, 32, 6.f);
     candle->setHitbox(3.f, 0.f, 26.f, 32.f);
-    candle->setAttackTypeParams(AttackType::CandleAttack, 120.f, 20.f, 60.f, 10, 0.f, 1000.f, 0.2f);
+    candle->setAttackTypeParams(AttackType::CandleAttack, 60.f, 20.f, 60.f, 20, 0.f, 10.f, 0.2f);
+    candle->setForce(12);
 
     return candle;
 }

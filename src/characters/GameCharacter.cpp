@@ -21,6 +21,9 @@ GameCharacter::GameCharacter(const std::string &name, int hp, int mana, int stam
 {
     sprite.setTexture(*this->texture);
     sprite.setPosition(position);
+
+    // initialize internal float stamina tracker
+    enduranceF = static_cast<float>(endurance);
 }
 
 /**
@@ -125,8 +128,15 @@ void GameCharacter::startDash(int direction)
     if (isStunned)
         return;
 
+    // require enough stamina to dash
+    if (!hasStamina(dashStaminaCost))
+        return;
+
     if (canDash && !isDashing && dashCooldown <= 0.f)
     {
+        // consume stamina up-front
+        consumeStamina(dashStaminaCost);
+
         dashCooldown = dashCooldownMax;
         isDashing = true;
         dashTimer = dashDuration;
@@ -232,6 +242,78 @@ void GameCharacter::checkCollisionWithGround(const Ground &ground)
         sprite.setPosition(position);
     }
 }
+
+    // Resolve collision between two characters: stronger pushes weaker; equal -> no movement
+    void GameCharacter::resolveCollisionWithCharacter(GameCharacter &other)
+    {
+        sf::FloatRect a = getBounds();
+        sf::FloatRect b = other.getBounds();
+        if (!a.intersects(b))
+            return;
+
+        float overlapLeft = (a.left + a.width) - b.left;
+        float overlapRight = (b.left + b.width) - a.left;
+        float overlapTop = (a.top + a.height) - b.top;
+        float overlapBottom = (b.top + b.height) - a.top;
+
+        float minOverlapX = std::min(overlapLeft, overlapRight);
+        float minOverlapY = std::min(overlapTop, overlapBottom);
+
+        if (force > other.force)
+        {
+            // push other out of overlap
+            if (minOverlapX < minOverlapY)
+            {
+                if (overlapLeft < overlapRight)
+                    other.position.x += overlapLeft;
+                else
+                    other.position.x -= overlapRight;
+            }
+            else
+            {
+                if (overlapTop < overlapBottom)
+                    other.position.y += overlapTop;
+                else
+                {
+                    other.position.y -= overlapBottom;
+                    other.velocity.y = 0.f;
+                }
+            }
+            other.sprite.setPosition(other.position);
+        }
+        else if (force < other.force)
+        {
+            // other pushes this out
+            if (minOverlapX < minOverlapY)
+            {
+                if (overlapLeft < overlapRight)
+                    position.x -= overlapLeft;
+                else
+                    position.x += overlapRight;
+            }
+            else
+            {
+                if (overlapTop < overlapBottom)
+                    position.y -= overlapTop;
+                else
+                {
+                    position.y += overlapBottom;
+                    velocity.y = 0.f;
+                }
+            }
+            sprite.setPosition(position);
+        }
+        else
+        {
+            // equal force -> no net movement: revert both to previous positions and zero velocities
+            position = previousPosition;
+            other.position = other.previousPosition;
+            velocity = sf::Vector2f(0.f, 0.f);
+            other.velocity = sf::Vector2f(0.f, 0.f);
+            sprite.setPosition(position);
+            other.sprite.setPosition(other.position);
+        }
+    }
 
 /**
  * @brief Reset tous les attributs de collisions a 0.
@@ -522,8 +604,20 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, 
         data = it->second;
 
     float attackRange = data.range;
-    float attackTop = position.y + data.topOffset;
+    float attackTopOffset = data.topOffset;
     float attackHeight = (data.height > 0.f) ? data.height : getBounds().height;
+    // If asymmetric overrides are present and attacking left, use left-side params
+    if (dir == Direction::Left && data.asymmetric)
+    {
+        if (data.rangeLeft > 0.f) attackRange = data.rangeLeft;
+        attackTopOffset = data.topOffsetLeft;
+        if (data.heightLeft > 0.f) attackHeight = data.heightLeft;
+    }
+
+    // Check stamina cost before enqueuing hits (default: GameCharacter does not block attacks; Player overrides)
+    // Note: we don't consume stamina here to allow Player override to manage cooldowns differently.
+
+    float attackTop = position.y + attackTopOffset;
     int damage = data.damage + damageBonus;
     float delay = data.delay;
     float knockback = data.knockback;
@@ -581,6 +675,31 @@ void GameCharacter::takeDamage(int dmg)
     isStunned = true;
     stunTimer = stunDuration;
     sprite.setColor(sf::Color(255, 100, 100));
+}
+
+bool GameCharacter::consumeStamina(int cost)
+{
+    if (enduranceF >= static_cast<float>(cost))
+    {
+        enduranceF -= static_cast<float>(cost);
+        if (enduranceF < 0.f) enduranceF = 0.f;
+        endurance = static_cast<int>(enduranceF);
+        return true;
+    }
+    return false;
+}
+
+void GameCharacter::regenStamina(float deltaTime)
+{
+    if (enduranceF >= static_cast<float>(maxEndurance))
+    {
+        enduranceF = static_cast<float>(maxEndurance);
+        endurance = maxEndurance;
+        return;
+    }
+    enduranceF += staminaRegenRate * deltaTime;
+    if (enduranceF > static_cast<float>(maxEndurance)) enduranceF = static_cast<float>(maxEndurance);
+    endurance = static_cast<int>(enduranceF);
 }
 
 /**
@@ -650,6 +769,9 @@ void GameCharacter::allCooldowns(float deltaTime)
         dashCooldown -= deltaTime;
     if (attackCooldown > 0.f)
         attackCooldown -= deltaTime;
+
+    // Regenerate stamina every frame
+    regenStamina(deltaTime);
 
     // Knockback timer - reset horizontal velocity when knockback expires
     if (knockbackTimer > 0.f)
@@ -841,10 +963,37 @@ void GameCharacter::setAttackTypeParams(AttackType type, float range, float topO
     d.range = range;
     d.topOffset = topOffset;
     d.height = height;
+    d.asymmetric = false;
+    d.rangeLeft = 0.f;
+    d.topOffsetLeft = 0.f;
+    d.heightLeft = 0.f;
     d.damage = damage;
     d.delay = delay;
     d.knockback = knockback;
     d.stunDuration = stunDuration;
+    attackTypes[type] = d;
+}
+
+void GameCharacter::setAttackTypeParamsAsymmetric(AttackType type,
+                                                  float rangeRight, float topOffsetRight, float heightRight,
+                                                  float rangeLeft, float topOffsetLeft, float heightLeft,
+                                                  int damage, float delay, float knockback, float stunDuration)
+{
+    AttackData d;
+    d.range = rangeRight;
+    d.topOffset = topOffsetRight;
+    d.height = heightRight;
+
+    d.asymmetric = true;
+    d.rangeLeft = rangeLeft;
+    d.topOffsetLeft = topOffsetLeft;
+    d.heightLeft = heightLeft;
+
+    d.damage = damage;
+    d.delay = delay;
+    d.knockback = knockback;
+    d.stunDuration = stunDuration;
+
     attackTypes[type] = d;
 }
 

@@ -24,6 +24,7 @@ enum class AttackType
     SwordAttack,
     CandleAttack
 };
+
 class GameCharacter
 {
 private:
@@ -88,14 +89,12 @@ private:
 
     // Attack
 
-    float attackCooldown;                 // Temps restant avant la prochaine attaque
-    const float attackCooldownMax = 0.8f; // Durée du cooldown en secondes (temps avant de pouvoir attaquer à nouveau)
+    const float attackCooldownMax = 0.8f; // Durée du cooldown par défaut en secondes (utilisé si nécessaire)
 
     bool isDamaged = false;
     float damageTimer = 0.f;
     
     // Stun system
-    bool isStunned = false;
     float stunTimer = 0.f;
     const float stunDuration = 0.5f; // Durée du stun
     
@@ -116,24 +115,54 @@ private:
     // Last computed attack box for debug/visualization
     sf::FloatRect lastAttackBox{0.f,0.f,0.f,0.f};
     bool hasAttackBox = false;
+
+    // Pushing force (for character vs character resolution)
+    int force = 0; // default neutral force
+
+
     float attackBoxTimer = 0.f;
     const float attackBoxDuration = damageDelayDuration; // show attack box for same delay
 
     struct AttackData
     {
-        float range = 100.f;        // horizontal reach in pixels
-        float topOffset = 0.f;      // offset from character.position.y for attack box top
-        float height = 0.f;         // if 0 => use getBounds().height
+        // Right-side defaults
+        float range = 100.f;        // horizontal reach to the right in pixels
+        float topOffset = 0.f;      // offset from character.position.y for attack box top (right)
+        float height = 0.f;         // if 0 => use getBounds().height (right)
+
+        // Optional left-side overrides when asymmetric == true
+        bool asymmetric = false;    // whether left-side overrides are active
+        float rangeLeft = 0.f;      // horizontal reach to the left
+        float topOffsetLeft = 0.f;  // top offset for left-side hitbox
+        float heightLeft = 0.f;     // height for left-side hitbox (0 => same logic as right)
+
         int damage = 10;
         float delay = 0.2f;         // delay before applying damage
         float knockback = 0.f;      // knockback force (pixels/sec)
         float stunDuration = 0.5f;  // stun duration in seconds
-        float reattackDelay = 0.f;    // extra delay before next attack can be made
+        float reattackDelay = 0.f;  // extra delay before next attack can be made
     };
 
     std::unordered_map<AttackType, AttackData> attackTypes;
 
+
 protected:
+    float attackCooldown;                 // Temps restant avant la prochaine attaque (accessible aux sous-classes)
+    float minAttackCooldown = 0.05f;      // Minimum cooldown when stamina is used (can be overridden by Player)
+
+    // Stamina / Endurance system (float internal variables; integer endurance/maxEndurance are declared in private section)
+    float enduranceF = 0.f;                // internal floating point stamina
+    float staminaRegenRate = 8.0f;         // stamina points regenerated per second
+    int attackStaminaCost = 10;            // stamina cost per attack
+    int dashStaminaCost = 20;              // stamina cost per dash
+
+    // helper methods for stamina
+    bool hasStamina(int cost) const { return enduranceF >= static_cast<float>(cost); }
+    bool consumeStamina(int cost); // subtract and update endurance
+    void regenStamina(float deltaTime); // regen per-frame
+
+    bool isStunned = false;
+
     std::shared_ptr<sf::Texture> texture;
     bool onGround = false;
     sf::Vector2f velocity;
@@ -190,6 +219,10 @@ public:
     bool isOnLadder() const { return onLadder; }
     void setClimbing(bool c) { isClimbing = c; }
 
+    // Force accessors for character-vs-character collision resolution
+    int getForce() const { return force; }
+    void setForce(int f) { force = f; }
+
     // Visuel et animation
 
     void selfAnimator(float deltaTime);
@@ -204,8 +237,11 @@ public:
 
     // Combat
 
-    void attack(Direction dir, std::vector<GameCharacter *> targets);
-    void attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type);
+    virtual void attack(Direction dir, std::vector<GameCharacter *> targets);
+    virtual void attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type);
+
+    // Resolve collision with another character (push weaker one out)
+    void resolveCollisionWithCharacter(GameCharacter &other);
 
     // Gestion des stats
 
@@ -238,4 +274,10 @@ public:
     // Attack type configuration
     void setAttackTypeParams(AttackType type, float range, float topOffset, float height, int damage, float delay, float knockback, float stunDuration);
     GameCharacter::AttackData getAttackTypeParams(AttackType type) const;
+
+    // Configure attack type params with asymmetric overrides (left/right)
+    void setAttackTypeParamsAsymmetric(AttackType type,
+                                     float rangeRight, float topOffsetRight, float heightRight,
+                                     float rangeLeft, float topOffsetLeft, float heightLeft,
+                                     int damage, float delay, float knockback, float stunDuration);
 };

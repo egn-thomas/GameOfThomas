@@ -23,6 +23,30 @@ void Player::jump()
     }
 }
 
+void Player::attack(Direction dir, std::vector<GameCharacter *> targets)
+{
+    // prevent attacking while stunned
+    if (isStunned)
+        return;
+
+    // basic cooldown gating
+    if (attackCooldown > 0.f)
+        return;
+
+    // require stamina for attacking
+    if (!hasStamina(attackStaminaCost))
+        return;
+
+    // consume stamina and perform attack
+    consumeStamina(attackStaminaCost);
+
+    // perform attack with default attack type
+    GameCharacter::attack(dir, targets, AttackType::SwordAttack);
+
+    // allow fast tapping for player — short cooldown
+    attackCooldown = playerMinAttackCooldown;
+}
+
 /**
  * @brief Dessine le joueur à l'écran.
  *
