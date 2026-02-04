@@ -43,8 +43,8 @@ void Player::attack(Direction dir, std::vector<GameCharacter *> targets)
     // perform attack with default attack type
     GameCharacter::attack(dir, targets, AttackType::SwordAttack);
 
-    // allow fast tapping for player — short cooldown
-    attackCooldown = playerMinAttackCooldown;
+    // Set attack cooldown to prevent spam
+    attackCooldown = attackCooldownDuration;
 }
 
 /**

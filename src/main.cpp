@@ -611,7 +611,7 @@ int main()
 
         // dev.drawInfo(window, *player, allCharacters);
         
-        // dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
+        dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
 
         // Si l'inventaire est ouvert, l'afficher (vue par défaut)
         if (eventManager.isInventoryOpen())

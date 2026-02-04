@@ -6,7 +6,9 @@ class Player : public GameCharacter {
 protected:
     const float jumpStrength = 520.f;
     // Player-specific minimum attack cooldown (allow fast tapping but cost stamina)
-    float playerMinAttackCooldown = 0.05f;
+    // float playerMinAttackCooldown = 0.05f;
+    // Attack cooldown to prevent spam
+    const float attackCooldownDuration = 0.25f;
 public:
     // constructeur
     Player(const std::string &name, int hp, int mana, int stamina, float speed, std::shared_ptr<sf::Texture> texture);
