@@ -10,6 +10,8 @@
 #include <array>
 #include "../items/Item.hpp"
 
+class CameraShake; // Forward declaration
+
 enum class AnimationState
 {
     Idle,
@@ -163,6 +165,9 @@ protected:
 
     bool isStunned = false;
 
+    // Camera shake support
+    CameraShake* cameraShake = nullptr;
+
     std::shared_ptr<sf::Texture> texture;
     bool onGround = false;
     sf::Vector2f velocity;
@@ -248,6 +253,9 @@ public:
     void takeDamage(int dmg);
     bool isAlive() const;
     void allCooldowns(float deltaTime);
+
+    // Camera shake support
+    void setCameraShake(CameraShake* shake) { cameraShake = shake; }
 
     // Stat modifiers (used by items)
     void restoreMana(int amount);

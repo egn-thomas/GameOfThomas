@@ -1,4 +1,5 @@
 #include "GameCharacter.hpp"
+#include "../ui/CameraShake.hpp"
 #include <iostream>
 #include <array>
 #include <memory>
@@ -626,6 +627,12 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, 
 
     attackAnimator(0.f, dir);
 
+    // Trigger camera shake on attack with the attack delay
+    if (cameraShake != nullptr)
+    {
+        cameraShake->trigger(0.15f, 4.f, 15.f, delay); // duration, intensity, frequency, delay
+    }
+
     // Créer une hitbox pour l'attaque en fonction du type
     sf::FloatRect attackBox;
     if (dir == Direction::Right)
@@ -675,6 +682,12 @@ void GameCharacter::takeDamage(int dmg)
     isStunned = true;
     stunTimer = stunDuration;
     sprite.setColor(sf::Color(255, 100, 100));
+    
+    // Trigger camera shake on damage
+    if (cameraShake != nullptr)
+    {
+        cameraShake->trigger(0.3f, 8.f, 12.f); // duration, intensity, frequency
+    }
 }
 
 bool GameCharacter::consumeStamina(int cost)

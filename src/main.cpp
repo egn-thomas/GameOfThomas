@@ -11,6 +11,7 @@
 #include "events/EventManager.hpp"
 #include "ui/PauseMenu.hpp"
 #include "ui/UIManager.hpp"
+#include "ui/CameraShake.hpp"
 #include "DevMode.hpp"
 #include "items/HealthPotion.hpp"
 #include "items/Item.hpp"
@@ -125,6 +126,13 @@ int main()
         player->addItem(std::make_unique<HealthPotion>(50));
     }
     auto npcs = CharacterFactory::createNonPlayer(window.getSize(), {2.5f, 2.f});
+
+    //---------------------------------
+    // Système de tremblement de caméra
+    //---------------------------------
+    CameraShake cameraShake;
+    if (player)
+        player->setCameraShake(&cameraShake);
 
     // Générer le premier niveau
     GameLevel currentLevel = generateNewLevel(window);
@@ -473,6 +481,9 @@ int main()
             currentLevel = generateNewLevel(window);
             levelCounter++;  // Increment level counter
             
+            // Arrêter le tremblement de caméra
+            cameraShake.stop();
+            
             // Réinitialiser la liste allCharacters avec les nouveaux personnages
             allCharacters.clear();
             allCharacters.push_back(player.get());
@@ -536,7 +547,13 @@ int main()
             else
             {
                 // Vue du joueur
-                gameView.setCenter(player->getPosition());
+                sf::Vector2f playerPos = player->getPosition();
+                
+                // Mettre à jour et appliquer le tremblement de caméra
+                sf::Vector2f shakeOffset = cameraShake.update(deltaTime);
+                playerPos += shakeOffset;
+                
+                gameView.setCenter(playerPos);
                 window.setView(gameView);
             }
         }

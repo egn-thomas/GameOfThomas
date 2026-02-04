@@ -18,6 +18,7 @@ add_executable(main
     src/ui/UIManager.cpp
     src/ui/UIManagerNotifications.cpp
     src/ui/InventoryMenu.cpp
+    src/ui/CameraShake.cpp
     src/environnement/ModelGenerator.cpp
     src/environnement/Node.cpp
     src/environnement/Ground.cpp
