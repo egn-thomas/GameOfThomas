@@ -3,6 +3,7 @@
 #include <iostream>
 #include <array>
 #include <memory>
+#include <cmath>
 
 /**
  * @brief Constructeur de GameCharacter, constitue la classe mère de tous les personnages du jeu.
@@ -247,8 +248,90 @@ void GameCharacter::checkCollisionWithGround(const Ground &ground)
     }
 }
 
+/**
+ * @brief Checks if a character at a given position would collide with any solid ground.
+ * Used to validate safe positions when pushing characters.
+ * 
+ * @param testPosition The position to test
+ * @param grounds The vector of all solid grounds
+ * @return true if the position would cause a collision, false if safe
+ */
+bool GameCharacter::wouldCollideWithGroundsAt(const sf::Vector2f &testPosition, const std::vector<std::unique_ptr<Ground>> &grounds) const
+{
+    // Temporarily create a bounds object at the test position
+    sf::FloatRect testBounds = getBounds();
+    testBounds.left = testPosition.x + (getBounds().left - position.x);
+    testBounds.top = testPosition.y + (getBounds().top - position.y);
+    
+    // Check intersection with all solid grounds
+    for (const auto &ground : grounds)
+    {
+        if (ground->isGroundSolid() && testBounds.intersects(ground->getBounds()))
+        {
+            return true; // Would collide
+        }
+    }
+    return false; // Safe position
+}
+
+/**
+ * @brief Raycasting function to check if there's a clear line of sight between two points.
+ * Tests if a straight line intersects any solid ground obstacles.
+ * Uses a simpler approach: just check if the line segment intersects any solid obstacle.
+ * 
+ * @param from Starting position
+ * @param to Target position
+ * @param grounds Vector of all solid grounds
+ * @return true if line of sight is clear, false if blocked by walls
+ */
+bool GameCharacter::hasLineOfSight(const sf::Vector2f &from, const sf::Vector2f &to, const std::vector<std::unique_ptr<Ground>> &grounds)
+{
+    // If positions are the same, there's line of sight
+    sf::Vector2f diff = to - from;
+    float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+    
+    if (distance < 1.f) // positions effectively the same
+        return true;
+    
+    // Normalize the direction vector
+    sf::Vector2f direction = diff / distance;
+    
+    // Sample along the line with larger steps to avoid excessive collision detection
+    // This prevents false negatives from tight corridors near ladders
+    const float stepSize = 10.f; // Check every 10 pixels
+    const float rayRadius = 15.f; // Radius around the line (character body width ~30px)
+    
+    // Sample from the start to the end
+    for (float t = stepSize; t < distance; t += stepSize)
+    {
+        sf::Vector2f samplePoint = from + direction * t;
+        
+        // Create bounds around the sample point (larger radius for more leniency)
+        sf::FloatRect rayBounds(samplePoint.x - rayRadius / 2.f, 
+                               samplePoint.y - rayRadius / 2.f,
+                               rayRadius, rayRadius);
+        
+        // Check intersection with solid grounds (ladders are non-solid, so automatically excluded)
+        for (const auto &ground : grounds)
+        {
+            // Only block if it's a solid ground AND not a ladder
+            if (ground->isGroundSolid() && !ground->isLadder())
+            {
+                // Check if ray intersects this ground
+                if (rayBounds.intersects(ground->getBounds()))
+                {
+                    return false; // Line of sight is blocked
+                }
+            }
+        }
+    }
+    
+    return true; // Line of sight is clear
+}
+
     // Resolve collision between two characters: stronger pushes weaker; equal -> no movement
-    void GameCharacter::resolveCollisionWithCharacter(GameCharacter &other)
+    // Now validates that the push doesn't move a character through walls/terrain
+    void GameCharacter::resolveCollisionWithCharacter(GameCharacter &other, const std::vector<std::unique_ptr<Ground>> &grounds)
     {
         sf::FloatRect a = getBounds();
         sf::FloatRect b = other.getBounds();
@@ -265,44 +348,76 @@ void GameCharacter::checkCollisionWithGround(const Ground &ground)
 
         if (force > other.force)
         {
-            // push other out of overlap
+            // push other out of overlap - with collision validation
             if (minOverlapX < minOverlapY)
             {
+                // Horizontal push
+                sf::Vector2f testPos = other.position;
                 if (overlapLeft < overlapRight)
-                    other.position.x += overlapLeft;
+                    testPos.x += overlapLeft;
                 else
-                    other.position.x -= overlapRight;
+                    testPos.x -= overlapRight;
+                
+                // Only apply if it doesn't cause collision with ground
+                if (!other.wouldCollideWithGroundsAt(testPos, grounds))
+                {
+                    other.position = testPos;
+                }
             }
             else
             {
+                // Vertical push
+                sf::Vector2f testPos = other.position;
                 if (overlapTop < overlapBottom)
-                    other.position.y += overlapTop;
+                    testPos.y += overlapTop;
                 else
                 {
-                    other.position.y -= overlapBottom;
+                    testPos.y -= overlapBottom;
                     other.velocity.y = 0.f;
+                }
+                
+                // Only apply if it doesn't cause collision with ground
+                if (!other.wouldCollideWithGroundsAt(testPos, grounds))
+                {
+                    other.position = testPos;
                 }
             }
             other.sprite.setPosition(other.position);
         }
         else if (force < other.force)
         {
-            // other pushes this out
+            // other pushes this out - with collision validation
             if (minOverlapX < minOverlapY)
             {
+                // Horizontal push
+                sf::Vector2f testPos = position;
                 if (overlapLeft < overlapRight)
-                    position.x -= overlapLeft;
+                    testPos.x -= overlapLeft;
                 else
-                    position.x += overlapRight;
+                    testPos.x += overlapRight;
+                
+                // Only apply if it doesn't cause collision with ground
+                if (!wouldCollideWithGroundsAt(testPos, grounds))
+                {
+                    position = testPos;
+                }
             }
             else
             {
+                // Vertical push
+                sf::Vector2f testPos = position;
                 if (overlapTop < overlapBottom)
-                    position.y -= overlapTop;
+                    testPos.y -= overlapTop;
                 else
                 {
-                    position.y += overlapBottom;
+                    testPos.y += overlapBottom;
                     velocity.y = 0.f;
+                }
+                
+                // Only apply if it doesn't cause collision with ground
+                if (!wouldCollideWithGroundsAt(testPos, grounds))
+                {
+                    position = testPos;
                 }
             }
             sprite.setPosition(position);
@@ -595,13 +710,13 @@ void GameCharacter::setAnimationParams(int count, int width, int height, float f
  * @param dir La direction de l'attaque (gauche ou droite).
  * @param targets Un vecteur de pointeurs vers les cibles potentielles.
  */
-void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets)
+void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, const std::vector<std::unique_ptr<Ground>> &grounds)
 {
     // default to SwordAttack for backward compatibility
-    attack(dir, targets, AttackType::SwordAttack);
+    attack(dir, targets, AttackType::SwordAttack, grounds);
 }
 
-void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type)
+void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type, const std::vector<std::unique_ptr<Ground>> &grounds)
 {
     // cannot attack while stunned
     if (isStunned)
@@ -661,7 +776,9 @@ void GameCharacter::attack(Direction dir, std::vector<GameCharacter *> targets, 
         if (target == this)
             continue; // ne pas se toucher soi-même
 
-        if (attackBox.intersects(target->getBounds()))
+        // Check both attack box intersection AND line of sight
+        if (attackBox.intersects(target->getBounds()) && 
+            hasLineOfSight(position, target->getPosition(), grounds))
         {
             // Créer une attaque en attente avec délai
             pendingAttack = {target, delay, damage, attackDirection, knockback, stunDuration, true};

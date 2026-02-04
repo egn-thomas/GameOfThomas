@@ -409,7 +409,7 @@ int main()
         }
 
         // Toujours appeler processEvents pour détecter Échap et les inputs du menu
-        eventManager.processEvents(*player, allCharacters);
+        eventManager.processEvents(*player, allCharacters, currentLevel.grounds);
 
         // Détection des coffres proches du joueur
         currentChestNearby = nullptr;
@@ -529,7 +529,7 @@ int main()
                     GameCharacter *b = allCharacters[j];
                     if (a->isAlive() && b->isAlive())
                     {
-                        a->resolveCollisionWithCharacter(*b);
+                        a->resolveCollisionWithCharacter(*b, currentLevel.grounds);
                     }
                 }
             }
@@ -611,7 +611,7 @@ int main()
 
         // dev.drawInfo(window, *player, allCharacters);
         
-        dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
+        // dev.drawDebugOverlays(window, *player, currentLevel.grounds, allCharacters);
 
         // Si l'inventaire est ouvert, l'afficher (vue par défaut)
         if (eventManager.isInventoryOpen())

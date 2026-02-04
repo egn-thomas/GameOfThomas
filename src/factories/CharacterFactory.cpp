@@ -76,8 +76,8 @@ std::unique_ptr<Player> CharacterFactory::createPlayer(const sf::Vector2u &windo
     //         damage, delay, knockback, stunDuration
 
     player->setAttackTypeParamsAsymmetric(AttackType::SwordAttack,
-                                         210.f, 60.f, 19.f,
-                                         100.f, 60.f, 19.f,
+                                         230.f, 60.f, 19.f,
+                                         120.f, 60.f, 19.f,
                                          10, 0.3f, 1000.f, 0.1f);
 
     player->addItem(std::make_unique<HealthPotion>(25));

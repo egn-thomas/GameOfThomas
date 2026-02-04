@@ -235,6 +235,13 @@ public:
     void checkCollisionWithGround(const Ground &ground);
     void collisionsToZero();
     void setHitbox(float offsetX, float offsetY, float width, float height);
+    
+    // Safe collision checking for pushing (prevents pushing through walls)
+    bool wouldCollideWithGroundsAt(const sf::Vector2f &testPosition, const std::vector<std::unique_ptr<Ground>> &grounds) const;
+    
+    // Line of sight checking (raycasting) - prevents seeing/attacking through walls
+    static bool hasLineOfSight(const sf::Vector2f &from, const sf::Vector2f &to, const std::vector<std::unique_ptr<Ground>> &grounds);
+    
     virtual sf::FloatRect getBounds() const;
     bool isOnGround() const { return onGround; }
     bool isOnLadder() const { return onLadder; }
@@ -258,11 +265,12 @@ public:
 
     // Combat
 
-    virtual void attack(Direction dir, std::vector<GameCharacter *> targets);
-    virtual void attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type);
+    virtual void attack(Direction dir, std::vector<GameCharacter *> targets, const std::vector<std::unique_ptr<Ground>> &grounds);
+    virtual void attack(Direction dir, std::vector<GameCharacter *> targets, AttackType type, const std::vector<std::unique_ptr<Ground>> &grounds);
 
     // Resolve collision with another character (push weaker one out)
-    void resolveCollisionWithCharacter(GameCharacter &other);
+    // Now includes ground collision validation to prevent pushing through walls
+    void resolveCollisionWithCharacter(GameCharacter &other, const std::vector<std::unique_ptr<Ground>> &grounds);
 
     // Gestion des stats
 

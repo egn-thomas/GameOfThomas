@@ -20,7 +20,7 @@ EventManager::EventManager(sf::RenderWindow &win)
  */
 #include "../ui/UIManager.hpp"
 
-void EventManager::processEvents(Player &player, std::vector<GameCharacter *> allCharacters)
+void EventManager::processEvents(Player &player, std::vector<GameCharacter *> allCharacters, const std::vector<std::unique_ptr<Ground>> &grounds)
 {
     sf::Event event;
     while (window.pollEvent(event))
@@ -65,7 +65,7 @@ void EventManager::processEvents(Player &player, std::vector<GameCharacter *> al
     // Ne traiter les événements du jeu que si pas en pause
     if (!paused)
     {
-        handleKeyboard(player, 1.f / 60.f, allCharacters);
+        handleKeyboard(player, 1.f / 60.f, allCharacters, grounds);
     }
 
     // Exécute tous les événements
@@ -84,7 +84,7 @@ void EventManager::processEvents(Player &player, std::vector<GameCharacter *> al
  * @param deltaTime Le temps écoulé depuis la dernière frame.
  * @param allCharacters Tous les personnages du jeu (joueur et PNJ).
  */
-void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<GameCharacter *> allCharacters)
+void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<GameCharacter *> allCharacters, const std::vector<std::unique_ptr<Ground>> &grounds)
 {
     sf::Vector2f direction(0.f, 0.f);
     static sf::Vector2f lastGroundDirection(0.f, 0.f);  // Tracker last direction when grounded
@@ -138,11 +138,11 @@ void EventManager::handleKeyboard(Player &player, float deltaTime, std::vector<G
     // Attaque a droite ou a gauche
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
     {
-        player.attack(Direction::Right, allCharacters);
+        player.attack(Direction::Right, allCharacters, grounds);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
     {
-        player.attack(Direction::Left, allCharacters);
+        player.attack(Direction::Left, allCharacters, grounds);
     }
 
     // Interaction (E pour ouvrir coffres, etc.)

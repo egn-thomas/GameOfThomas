@@ -50,8 +50,8 @@ void Candle::updateBehavior(float deltaTime, Player* player, const std::vector<s
     sf::Vector2f diff = playerPos - myPos;
     float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
     
-    // Si le joueur est en portée de détection
-    if (distance <= detectionRange)
+    // Si le joueur est en portée de détection ET en ligne de vue
+    if (distance <= detectionRange && GameCharacter::hasLineOfSight(myPos, playerPos, grounds))
     {
         // Calculer la direction vers le joueur
         sf::Vector2f direction = calculateDirectionToPlayer(playerPos);
@@ -73,7 +73,7 @@ void Candle::updateBehavior(float deltaTime, Player* player, const std::vector<s
             Direction attackDirection = (direction.x < 0.f) ? Direction::Left : Direction::Right;
             
             // Effectuer l'attaque avec les paramètres définis
-            this->attack(attackDirection, {player}, AttackType::CandleAttack);
+            this->attack(attackDirection, {player}, AttackType::CandleAttack, grounds);
             
             // Réinitialiser le cooldown
             attackCooldown = attackCooldownDuration;

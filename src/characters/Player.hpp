@@ -16,7 +16,7 @@ public:
     void jump();
 
     // Player-specific attack override to consume stamina and allow fast attacks
-    void attack(Direction dir, std::vector<GameCharacter *> targets) override;
+    void attack(Direction dir, std::vector<GameCharacter *> targets, const std::vector<std::unique_ptr<Ground>> &grounds) override;
 
     // dessin éventuellement surchargé (si spécifique)
     void draw(sf::RenderWindow& window) override;

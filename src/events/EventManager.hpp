@@ -7,13 +7,14 @@
 
 
 class GameCharacter;
+class Ground;
 
 class UIManager; // forward
 
 class EventManager {
 public:
     explicit EventManager(sf::RenderWindow& win);
-    void processEvents(Player &player, std::vector<GameCharacter *> allCharacters);
+    void processEvents(Player &player, std::vector<GameCharacter *> allCharacters, const std::vector<std::unique_ptr<Ground>> &grounds);
     bool isMapViewActive() const { return showMapView; }
     void toggleMapView() { showMapView = !showMapView; }
     bool isPaused() const { return paused; }
@@ -39,5 +40,5 @@ private:
     bool rightPressed = false;
     bool enterPressed = false;
     
-    void handleKeyboard(Player& player, float deltaTime,  std::vector<GameCharacter *> allCharacters);
+    void handleKeyboard(Player& player, float deltaTime, std::vector<GameCharacter *> allCharacters, const std::vector<std::unique_ptr<Ground>> &grounds);
 };

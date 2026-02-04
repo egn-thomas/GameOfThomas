@@ -23,7 +23,7 @@ void Player::jump()
     }
 }
 
-void Player::attack(Direction dir, std::vector<GameCharacter *> targets)
+void Player::attack(Direction dir, std::vector<GameCharacter *> targets, const std::vector<std::unique_ptr<Ground>> &grounds)
 {
     // prevent attacking while stunned
     if (isStunned)
@@ -41,7 +41,7 @@ void Player::attack(Direction dir, std::vector<GameCharacter *> targets)
     consumeStamina(attackStaminaCost);
 
     // perform attack with default attack type
-    GameCharacter::attack(dir, targets, AttackType::SwordAttack);
+    GameCharacter::attack(dir, targets, AttackType::SwordAttack, grounds);
 
     // Set attack cooldown to prevent spam
     attackCooldown = attackCooldownDuration;
